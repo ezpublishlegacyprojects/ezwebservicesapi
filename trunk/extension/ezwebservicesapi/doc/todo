@@ -1,0 +1,13 @@
+1. more docs
+
+2. list kernel modules that:
+ - do a clean shutdown on their own
+ - do not use templates
+ - exit by a redirect
+ - do not run a template (or run more than one / a variable one)
+
+2b. implement some filtering of fetch.view.* based on that info
+
+3. other ideas: besides running views, we could run
+- fetch functions [DONE!]
+- other operations?
