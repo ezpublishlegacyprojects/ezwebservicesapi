@@ -161,6 +161,8 @@ class eZWebservicesAPIExecutor
     {
         $vws = '';
         $fws = '';
+        $ini = ezINI::instance( 'ezwebservicesapi.ini' );
+        $skip = $ini->variable( 'ws_runview', 'SkipViews' );
         foreach( eZModuleScanner::getModuleList() as $modulename => $path )
         {
 
@@ -170,8 +172,17 @@ class eZWebservicesAPIExecutor
             {
                 if ( $doviews )
                 {
+                    if ( in_array( $modulename, $skip ) )
+                    {
+                       continue;
+                    }
                     foreach( $module->attribute( 'views' ) as $viewname => $view )
                     {
+                        if ( in_array( "$modulename/$viewname", $skip ) )
+                        {
+                            continue;
+                        }
+
                         $view = array_merge( array(
                             'params' => array(),
                             'unordered_params' => array(),

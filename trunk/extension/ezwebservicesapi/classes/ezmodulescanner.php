@@ -1,7 +1,7 @@
 <?php
 /**
  * Class that scans all active module definitions
- * Might be a welcome addition to ggsysinfo, too...
+ * has been copied to ggsysinfo, too...
  *
  * @author G. Giunta
  * @version $Id: ggezwebservicesclient.php 102 2009-09-02 09:03:34Z gg $
