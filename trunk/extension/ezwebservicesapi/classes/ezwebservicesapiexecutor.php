@@ -126,7 +126,7 @@ class eZWebservicesAPIExecutor
     * Run an ezp module fetch function, encapsulate results in the reponse.
     * @return mixed
     */
-    static function ezpublish_fetch( $module, $fetch, $parameters = array() )
+    static function ezpublish_fetch( $module, $fetch, $parameters = array(), $results_filter = array(), $encode_depth = 2 )
     {
         // To discriminate better between a missing module, missing fetch function,
         // etc, we would need to copy and paste here much code from the classes
@@ -135,7 +135,18 @@ class eZWebservicesAPIExecutor
         $results = eZFunctionHandler::execute( $module, $fetch, $parameters );
         if ( $results !== null )
         {
-            return self::to_array( $results );
+            if( ( count( $results_filter ) || $encode_depth != 2 ) && is_array( $results ) )
+            {
+                foreach( $results as $key => $val )
+                {
+                    $results[$key] = self::to_array( $val, $encode_depth, $results_filter );
+                }
+                return $results;
+            }
+            else
+            {
+                return self::to_array( $results );
+            }
         }
         // logging of error that led to a null here is already done by called code
         return new ggWebservicesFault( self::ERR_FETCHFAILED, "Failed executing fetch function $module/$fetch" );
@@ -224,7 +235,9 @@ function ezp_view_{$modulename}_$viewname( \$parameters ) { return eZWebservices
                     {
                         $fws .= "
 \$server->registerFunction( 'ezp.fetch.$modulename.$function', array( 'struct' ), 'mixed', 'Runs the fetch function $modulename/$function. See: http://ez.no/doc/ez_publish/technical_manual/4_x/reference/modules/$modulename/fetch_functions/$function' );
-function ezp_fetch_{$modulename}_$function( \$parameters ) { return eZWebservicesAPIExecutor::ezpublish_fetch( '$modulename', '$function', \$parameters ); }
+\$server->registerFunction( 'ezp.fetch.$modulename.$function', array( 'struct', 'array' ), 'mixed', 'Runs the fetch function $modulename/$function, filtering output columns. See: http://ez.no/doc/ez_publish/technical_manual/4_x/reference/modules/$modulename/fetch_functions/$function' );
+\$server->registerFunction( 'ezp.fetch.$modulename.$function', array( 'struct', 'array', 'int' ), 'mixed', 'Runs the fetch function $modulename/$function, filtering output columns and limiting encoding depth. See: http://ez.no/doc/ez_publish/technical_manual/4_x/reference/modules/$modulename/fetch_functions/$function' );
+function ezp_fetch_{$modulename}_$function( \$parameters, \$results_filter=array(), \$encode_depth=2 ) { return eZWebservicesAPIExecutor::ezpublish_fetch( '$modulename', '$function', \$parameters, \$results_filter, \$encode_depth ); }
 ";
                     }
                 }

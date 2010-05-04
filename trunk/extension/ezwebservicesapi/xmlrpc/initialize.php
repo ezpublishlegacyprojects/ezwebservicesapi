@@ -40,6 +40,16 @@ $server->registerFunction(
     array( 'string', 'string', 'struct' ),
     'struct', // type of return value
     'Runs any ezpublish fetch function. Params: string $module, string $fetch_function, struct $fetch_parameters' );
+$server->registerFunction(
+    'ezp.fetchall',
+    array( 'string', 'string', 'struct', 'array' ),
+    'struct', // type of return value
+    'Runs any ezpublish fetch function. Params: string $module, string $fetch_function, struct $fetch_parameters, array $results_filter' );
+$server->registerFunction(
+    'ezp.fetchall',
+    array( 'string', 'string', 'struct', 'array', 'int' ),
+    'struct', // type of return value
+    'Runs any ezpublish fetch function. Params: string $module, string $fetch_function, struct $fetch_parameters, array $results_filter, int $encode_depth' );
 
 
 // These stub functions are only used to allow registering a class method with a friendlier ws name than using php classes
@@ -52,9 +62,9 @@ function ezp_viewall( $module, $view, $return_type = eZWebservicesAPIExecutor::R
     return eZWebservicesAPIExecutor::ezpublish_view( $module, $view, $return_type, $parameters, $unordered_parameters, $post_parameters,$skipaccesscheck );
 }
 
-function ezp_fetchall( $module, $fetch, $parameters = array() )
+function ezp_fetchall( $module, $fetch, $parameters = array(), $results_filter = array(), $encode_depth = 2 )
 {
-    return eZWebservicesAPIExecutor::ezpublish_fetch( $module, $fetch, $parameters );
+    return eZWebservicesAPIExecutor::ezpublish_fetch( $module, $fetch, $parameters, $results_filter, $encode_depth );
 }
 
 // Now the dynamic part:
