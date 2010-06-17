@@ -1,0 +1,92 @@
+eZ Webservices API extension for eZ publish
+===================================
+
+An extension trying to expose via webservice calls (XMLRPC, JSONRPC, SOAP, AJAX)
+all existing eZ Publish functionality, starting with
+- fetch functions
+- standard module views
+
+
+License
+=======
+GNU General Public License v2.0
+
+
+Requirements
+============
+o  eZ publish version: Make sure you use eZ publish version 4.0 or higher.
+o  PHP version: as indicated in your eZ publish version requirements
+o  Web Browser: no specific requirements
+o  ggwebservices extension, version 0.4 or later
+o  the ezjscore extension is recommended for receiving ajax calls
+o  to receive jsonrpc calls, the php JSON extension is needed
+o  to receive xmlrpc calls, the php XMLRPC extension is needed
+
+
+Installation
+============
+1. Make sure the ggwebservices extension is present and active.
+   While at it, please read the documentation that comes with it.
+
+2. Standard eZ Publish extension installation method:
+   - copy the files from the zip under the extension directory
+   - activate the extension either via the admin interface or by editing
+     site.ini.append.php + regenerating autoloads
+
+3. Assign access policies to grant execution permissions on the desired
+   webservices to those user roles that will be accessing them:
+   module: webservices
+   function: execute
+   limitation: it is possible to limit execution by single webservice
+
+
+Usage
+=====
+Having enabled this extension, a lot of webservices will be available on your
+eZ Publish installation.
+
+The supported protocols are, as of the current version, XMLRPC and JSONRPC.
+Ajax calls from the eZ Publish web pages of the server itself are supported via
+the $.jsonrpc (jquery) and Y.io.jsonrpc (yui) javascript functions.
+
+The exact list of webservices will depend on the extensions you have enabled,
+including:
+- two generic webservices: ezp.viewall and ezp.fetchall
+- one webservice for every fetch function: ezp.fetch.class.attribute_list etc...
+- one webservice for every module view: ezp.view.collaboration.view etc...
+
+The parameters of these webservices are the same that are used from the standard
+eZ Publish API detailed in the online doc at
+http://ez.no/doc/ez_publish/technical_manual/4_x/reference/template_fetch_functions
+http://ez.no/doc/ez_publish/technical_manual/4_x/reference/modules
+
+For fetch functions, the signature is:
+ezp.fetch.$module.$fetch_function(
+  struct $params,              // where all the (named) parameters for the fetch functions are stored
+  [array $output_filter,]      // optional filter to decide which fields to remove in the fetched objects
+  [int $output_encoding_level] // optional filter to decide the level of recursion used to encode the fetched objects
+)
+
+For module views, the signature is:
+ezp.view.$module.$view(
+  [mixed $view_parameter]*,       // the ordered parameters, as declared in the view definition in module.php
+  [struct $unordered_parameters], // the unordered parameters, as declared in the view definition in module.php
+  [struct $post_parameters]       // any parameters that would have be sent as POST variable
+)
+
+The URLs to be used to access the webservices are:
+
+http://ezp.server/index.php/siteaccess/webservices/execute/jsonrpc
+http://ezp.server/index.php/siteaccess/webservices/execute/xmlrpc
+
+(alternatively, some optimized controller file can be put in place. Read the
+documentation of ggwebservices for more details)
+
+The ggwebservices extension includes a graphical debugger that can be used to
+discover / test the new webservices. It is available in the administration
+interface of eZ Publish in the 'WS Debugger' tab.
+
+
+Troubleshooting
+===============
+For more documentation look under doc/

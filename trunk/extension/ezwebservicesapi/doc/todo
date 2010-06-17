@@ -9,7 +9,7 @@
  - exit by a redirect
  - do not run a template (or run more than one / a variable one)
 
-2b. implement some filtering of fetch.view.* based on that info
+2b. implement some filtering of ezp.view.* based on that info
 
 3. other ideas: besides running views, we could run
 - fetch functions [DONE!]
