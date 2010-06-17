@@ -220,7 +220,7 @@ class eZWebservicesAPIExecutor
                             /// @todo add description of params into help text
                             $help .= ', struct $post_parameters';
                         }*/
-                        $p_s = count( $view['unordered'] ) ? implode( ', ', array_fill( 0, count( $view['unordered'], "'mixed'" ) ) ) : '';
+                        //$p_s = count( $view['unordered'] ) ? implode( ', ', array_fill( 0, count( $view['unordered'], "'mixed'" ) ) ) : '';
                         $vws .= "
 \$server->registerFunction( 'ezp.view.$modulename.$viewname', array( " . implode( ', ', $param_array ) . " ), 'struct', 'Executes the view $modulename/$viewname. Params: $help. See http://ez.no/doc/ez_publish/technical_manual/4_x/reference/modules/$modulename/views/$view' );
 \$server->registerFunction( 'ezp.view.$modulename.$viewname', array( " . implode( ', ', $param_array ) . ", 'struct' ), 'struct', 'Executes the view $modulename/$viewname. Params: $help, struct \$post_parameters. See http://ez.no/doc/ez_publish/technical_manual/4_x/reference/modules/$modulename/views/$view' );
