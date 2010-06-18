@@ -6,6 +6,8 @@ all existing eZ Publish functionality, starting with
 - fetch functions
 - standard module views
 
+Please note that SOAP support is not available as of release 0.1
+
 
 License
 =======
@@ -15,12 +17,12 @@ GNU General Public License v2.0
 Requirements
 ============
 o  eZ publish version: Make sure you use eZ publish version 4.0 or higher.
-o  PHP version: as indicated in your eZ publish version requirements
+o  Web Server/Database/PHP version: as indicated in your eZ publish version requirements
 o  Web Browser: no specific requirements
 o  ggwebservices extension, version 0.4 or later
-o  the ezjscore extension is recommended for receiving ajax calls
 o  to receive jsonrpc calls, the php JSON extension is needed
 o  to receive xmlrpc calls, the php XMLRPC extension is needed
+o  the ezjscore extension is recommended for receiving ajax calls
 
 
 Installation
@@ -47,7 +49,8 @@ eZ Publish installation.
 
 The supported protocols are, as of the current version, XMLRPC and JSONRPC.
 Ajax calls from the eZ Publish web pages of the server itself are supported via
-the $.jsonrpc (jquery) and Y.io.jsonrpc (yui) javascript functions.
+the $.jsonrpc (jquery) and Y.io.jsonrpc (yui) javascript functions that come
+bundled in the ggwebservices extension.
 
 The exact list of webservices will depend on the extensions you have enabled,
 including:
@@ -55,29 +58,69 @@ including:
 - one webservice for every fetch function: ezp.fetch.class.attribute_list etc...
 - one webservice for every module view: ezp.view.collaboration.view etc...
 
+[Tip: using the ggsysinfo extension, you can find out the complete list of views
+and fetch functions available in your installation.]
+
 The parameters of these webservices are the same that are used from the standard
 eZ Publish API detailed in the online doc at
 http://ez.no/doc/ez_publish/technical_manual/4_x/reference/template_fetch_functions
 http://ez.no/doc/ez_publish/technical_manual/4_x/reference/modules
 
 For fetch functions, the signature is:
-ezp.fetch.$module.$fetch_function(
+
+mixed $result = ezp.fetch.$module.$fetch_function(
   struct $params,              // where all the (named) parameters for the fetch functions are stored
   [array $output_filter,]      // optional filter to decide which fields to remove in the fetched objects
   [int $output_encoding_level] // optional filter to decide the level of recursion used to encode the fetched objects
 )
 
+The result is the same that you would get when calling the fetch function in a template,
+which means in general an array of objects.
+
 For module views, the signature is:
-ezp.view.$module.$view(
+
+mixed $result = ezp.view.$module.$view(
+  struct $options,                // extra options. supported options:
+                                     'return_type' 1 for returning the variables normally passed to the template, 2 for template results
   [mixed $view_parameter]*,       // the ordered parameters, as declared in the view definition in module.php
   [struct $unordered_parameters], // the unordered parameters, as declared in the view definition in module.php
-  [struct $post_parameters]       // any parameters that would have be sent as POST variable
+  [struct $post_parameters]       // any parameters that would have been sent as POST variable
 )
+
+The result depends on the value correspoding to the 'return_type' key in the $options parameter:
+1 - the webservice will return the variables that are normally passed to the template used to render the view
+2 - the webservice will return (as string) the result of executing the template associated with the view
+Note that due to the way the eZ Publish kernel works, the view template is always executed even when passing 'return_type' = 1
+
+Plus the two generic webservices:
+
+mixed $result = ezp.fetchall(
+  string $module,              // name of the module
+  string $fetch_function,      // name of the fetch function
+  [struct $params,]            // where all the (named) parameters for the fetch functions are stored
+  [array $output_filter,]      // optional filter to decide which fields to remove in the fetched objects
+  [int $output_encoding_level] // optional filter to decide the level of recursion used to encode the fetched objects
+)
+
+mixed $result = ezp.viewall(
+  string $module,                 // name of the module
+  string $fetch_function,         // name of the fetch function
+  [struct $options],              // extra options. supported options:
+                                     'return_type' 1 for returning the variables normally passed to the template, 2 for template results (default is 1)
+  [mixed $view_parameter]*,       // the ordered parameters, as declared in the view definition in module.php
+  [struct $unordered_parameters], // the unordered parameters, as declared in the view definition in module.php
+  [struct $post_parameters]       // any parameters that would have been sent as POST variable
+)
+
+These webservices  are meant to give a role a single permission that will allow
+him to execute any view or fetch function.
+In the future there will be support for allowing a user to call ezp.viewall and
+let the extension check if he has access to the actual module/view being executed.
 
 The URLs to be used to access the webservices are:
 
-http://ezp.server/index.php/siteaccess/webservices/execute/jsonrpc
-http://ezp.server/index.php/siteaccess/webservices/execute/xmlrpc
+http://ezp.server/etc/index.php/siteaccess/webservices/execute/jsonrpc
+http://ezp.server/etc/index.php/siteaccess/webservices/execute/xmlrpc
 
 (alternatively, some optimized controller file can be put in place. Read the
 documentation of ggwebservices for more details)
