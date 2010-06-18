@@ -1,7 +1,7 @@
 eZ Webservices API extension for eZ publish
 ===================================
 
-An extension trying to expose via webservice calls (XMLRPC, JSONRPC, SOAP, AJAX)
+An extension aiming to expose via webservice calls (XMLRPC, JSONRPC, SOAP, AJAX)
 all existing eZ Publish functionality, starting with
 - fetch functions
 - standard module views
@@ -128,6 +128,15 @@ documentation of ggwebservices for more details)
 The ggwebservices extension includes a graphical debugger that can be used to
 discover / test the new webservices. It is available in the administration
 interface of eZ Publish in the 'WS Debugger' tab.
+
+Last but not least: the list of existing module views and fetch functions is cached
+by this extension, so that it has not to be reaclculated upon every invocation
+of a webservice. After activating extensions, this cache should be rebuilt, for
+the new views and fetch functions (if any) to appear as websevices.
+- if running on eZ Publish 4.3 or later, this can be done in the administration interface
+- if running on eZ Publish 4.2 or later, the directory
+  var/siteaccess/cache/ezwebservicesapi
+  will have to be cleaned by hand
 
 
 Troubleshooting

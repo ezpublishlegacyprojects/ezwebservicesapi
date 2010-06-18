@@ -1,0 +1,134 @@
+########################################
+# TO FILL IN THE DEBUGGER FORM
+########################################
+
+Action: Execute method
+Method name: (see below)
+Payload: (see below)
+
+########################################
+# GENERIC ezp.viewall CALL
+# Method name: ezp.viewall
+########################################
+<!-- module -->
+<param>
+<value><string>module</string></value>
+</param>
+
+<!-- view -->
+<param>
+<value><string>view</string></value>
+</param>
+
+<!-- return type: 1 = tpl variables, 2 = $module -->
+<param>
+<value><struct>
+  <member>
+    <name>return_type</name>
+    <value><i4>1</i4></value>
+  </member>
+</struct></value>
+</param>
+
+<!-- ordered (positional) parameters -->
+<param>
+<value><array>
+<data></data>
+</array></value>
+</param>
+
+<!-- unordered parameters -->
+<param>
+<value><struct>
+</struct></value>
+</param>
+
+<!-- post variables -->
+<param>
+<value><struct>
+</struct></value>
+</param>
+
+########################################
+# EZINFO CALL (direct)
+# Method name: ezp.view.ezinfo.about
+########################################
+<param>
+  <value><struct>
+    <member>
+      <name>return_type</name>
+      <value><i4>2</i4></value>
+    </member>
+  </struct></value>
+</param>
+
+########################################
+# EZINFO CALL (via ezp.viewall)
+# Method name: ezp.viewall
+########################################
+<param>
+  <value><string>ezinfo</string></value>
+</param>
+<param>
+  <value><string>about</string></value>
+</param>
+<param>
+  <value><struct>
+    <member>
+      <name>return_type</name>
+      <value><i4>2</i4></value>
+    </member>
+  </struct></value>
+</param>
+
+########################################
+# CLEAN ALL CACHES CALL
+# Method name: ezp.view.setup.cache
+########################################
+<param>
+  <value><struct>
+  </struct></value>
+</param>
+<param>
+  <value><array>
+    <data></data>
+  </array></value>
+</param>
+<param>
+  <value><struct>
+  </struct></value>
+</param>
+<param>
+  <value><struct>
+    <member>
+      <name>ClearAllCacheButton</name>
+      <value><string>ClearAllCacheButton</string></value>
+    </member>
+    </struct></value>
+</param>
+
+########################################
+# CLEAN USER SESSIONS CALL
+# Method name: ezp.view.setup.session
+########################################
+<param>
+  <value><struct>
+  </struct></value>
+</param>
+<param>
+  <value><array>
+    <data></data>
+  </array></value>
+</param>
+<param>
+  <value><struct>
+  </struct></value>
+</param>
+<param>
+  <value><struct>
+    <member>
+      <name>RemoveAllSessionsButton</name>
+      <value><string>RemoveAllSessionsButton</string></value>
+    </member>
+  </struct></value>
+</param>

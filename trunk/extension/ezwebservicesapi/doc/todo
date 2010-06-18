@@ -1,3 +1,5 @@
+- add support for the SkipViewAccessCheck ini file parameter
+
 - add ordering definition: we depend on ggws
 - add ant build file
 
