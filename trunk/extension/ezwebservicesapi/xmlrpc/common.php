@@ -79,7 +79,6 @@ if ( !$clusterFileHandler->fileExists( $cachedfile ) )
     $clusterFileHandler->fileStoreContents( $cachedfile, $code );
 }
 $clusterFileHandler->fileFetch( $cachedfile );
-eZDebug::writeWarning( "including $cachedfile" );
 include( $cachedfile );
 
 ?>
