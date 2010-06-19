@@ -6,5 +6,6 @@ EnableJSONRPC=true
 
 [ExtensionSettings]
 XMLRPCExtensions[]=ezwebservicesapi
+JSONRPCExtensions[]=ezwebservicesapi
 
 */ ?>

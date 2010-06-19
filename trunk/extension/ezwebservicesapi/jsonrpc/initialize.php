@@ -1,6 +1,6 @@
 <?php
 
 // we're lazy bastards
-include( '../xmlrpc/initialize.php' );
+include_once( 'extension/ezwebservicesapi/xmlrpc/common.php' );
 
 ?>
