@@ -1,3 +1,6 @@
+- allow caller to set the encoding level and attr. filter to be used per variable on the variables returned by ezp.view.xxx;
+  also allow to filter out desired vars
+
 - add support for the SkipViewAccessCheck ini file parameter
 
 - add ordering definition: we depend on ggws
