@@ -1,7 +1,14 @@
 Changes from 0.1 to 0.2 - released 2010/xx/yy
 
 *General:
+- improved the encoding of ezpersistentobject descendant classes
+  (eg. ezcontentobjectreenode as returned by fetch content/list):
+  now the proper type is enforced for scalar attributes
 
 *Bugfixes:
-- make sure this extension is enabled as JSONRPC provider, and that it registers webservices for jsonrpc also when RegisterAllProtocolsFunctions=disabled
+- make sure this extension is enabled as JSONRPC provider, and that it registers
+  webservices for jsonrpc also when RegisterAllProtocolsFunctions=disabled
 - remove one message in warning log that appeared under normal conditions
+- set the default nesting level of object decoding for fetch results to 1, as it
+  is what was in use actually; use the same level whether a single object or an
+  array is returned

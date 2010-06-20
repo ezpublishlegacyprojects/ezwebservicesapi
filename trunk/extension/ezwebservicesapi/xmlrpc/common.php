@@ -62,7 +62,7 @@ function ezp_viewall( $module, $view, $return_type = eZWebservicesAPIExecutor::R
     return eZWebservicesAPIExecutor::ezpublish_view( $module, $view, $return_type, $parameters, $unordered_parameters, $post_parameters,$skipaccesscheck );
 }
 
-function ezp_fetchall( $module, $fetch, $parameters = array(), $results_filter = array(), $encode_depth = 2 )
+function ezp_fetchall( $module, $fetch, $parameters = array(), $results_filter = array(), $encode_depth = 1 )
 {
     return eZWebservicesAPIExecutor::ezpublish_fetch( $module, $fetch, $parameters, $results_filter, $encode_depth );
 }

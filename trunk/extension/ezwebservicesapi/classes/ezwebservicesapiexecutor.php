@@ -126,7 +126,7 @@ class eZWebservicesAPIExecutor
     * Run an ezp module fetch function, encapsulate results in the reponse.
     * @return mixed
     */
-    static function ezpublish_fetch( $module, $fetch, $parameters = array(), $results_filter = array(), $encode_depth = 2 )
+    static function ezpublish_fetch( $module, $fetch, $parameters = array(), $results_filter = array(), $encode_depth = 1 )
     {
         // To discriminate better between a missing module, missing fetch function,
         // etc, we would need to copy and paste here much code from the classes
@@ -135,7 +135,7 @@ class eZWebservicesAPIExecutor
         $results = eZFunctionHandler::execute( $module, $fetch, $parameters );
         if ( $results !== null )
         {
-            if( ( count( $results_filter ) || $encode_depth != 2 ) && is_array( $results ) )
+            if( is_array( $results ) )
             {
                 foreach( $results as $key => $val )
                 {
@@ -145,7 +145,8 @@ class eZWebservicesAPIExecutor
             }
             else
             {
-                return self::to_array( $results );
+                // either scalar, or single ezpo object
+                return self::to_array( $results, $encode_depth, $results_filter );
             }
         }
         // logging of error that led to a null here is already done by called code
@@ -237,7 +238,7 @@ function ezp_view_{$modulename}_$viewname( \$parameters ) { return eZWebservices
 \$server->registerFunction( 'ezp.fetch.$modulename.$function', array( 'struct' ), 'mixed', 'Runs the fetch function $modulename/$function. See: http://ez.no/doc/ez_publish/technical_manual/4_x/reference/modules/$modulename/fetch_functions/$function' );
 \$server->registerFunction( 'ezp.fetch.$modulename.$function', array( 'struct', 'array' ), 'mixed', 'Runs the fetch function $modulename/$function, filtering output columns. See: http://ez.no/doc/ez_publish/technical_manual/4_x/reference/modules/$modulename/fetch_functions/$function' );
 \$server->registerFunction( 'ezp.fetch.$modulename.$function', array( 'struct', 'array', 'int' ), 'mixed', 'Runs the fetch function $modulename/$function, filtering output columns and limiting encoding depth. See: http://ez.no/doc/ez_publish/technical_manual/4_x/reference/modules/$modulename/fetch_functions/$function' );
-function ezp_fetch_{$modulename}_$function( \$parameters, \$results_filter=array(), \$encode_depth=2 ) { return eZWebservicesAPIExecutor::ezpublish_fetch( '$modulename', '$function', \$parameters, \$results_filter, \$encode_depth ); }
+function ezp_fetch_{$modulename}_$function( \$parameters, \$results_filter=array(), \$encode_depth=1 ) { return eZWebservicesAPIExecutor::ezpublish_fetch( '$modulename', '$function', \$parameters, \$results_filter, \$encode_depth ); }
 ";
                     }
                 }
@@ -256,7 +257,7 @@ function ezp_fetch_{$modulename}_$function( \$parameters, \$results_filter=array
      * @param array $attributes a filter on object attributes / array keys to serialize
      * @return mixed
      */
-    static function to_array( $obj, $depth=2, $attributes=array() )
+    static function to_array( $obj, $depth=2, $attributes=array(), $with_typecast=true )
     {
         if ( ( is_object( $obj ) || is_array( $obj ) ) && $depth < 1 )
         {
@@ -267,11 +268,43 @@ function ezp_fetch_{$modulename}_$function( \$parameters, \$results_filter=array
         {
             // 'template object' (should be an ancestor of ezpo)
             $out = array();
+            if ( $with_typecast )
+            {
+                $fields = array();
+                if ( method_exists( $obj, "definition" ) )
+                {
+                    $def = $obj->definition();
+                    if ( isset( $def['fields'] ) )
+                    {
+                        $fields = $def['fields'];
+                    }
+                }
+            }
             foreach( $obj->attributes() as $key )
             {
                 if ( count( $attributes ) === 0 || in_array( $key, $attributes ) )
                 {
-                    $out[$key] = self::to_array( $obj->attribute( $key ), $depth-1 );
+                    $out[$key] = self::to_array( $obj->attribute( $key ), $depth-1, array(), $with_typecast );
+                    if ( $with_typecast && array_key_exists( $key, $fields ) && isset( $fields[$key]['datatype'] ) )
+                    {
+                        switch( $fields[$key]['datatype'] )
+                        {
+                            case 'string':
+                            case 'text':
+                                break;
+                            case 'int':
+                            case 'integer':
+                                $out[$key] = (integer)$out[$key];
+                                break;
+                            case 'float':
+                                $out[$key] = (float)$out[$key];
+                                break;
+                            case 'bool':
+                            case 'boolean':
+                                $out[$key] = (boolean)$out[$key];
+                                break;
+                        }
+                    }
                 }
             }
         }
@@ -282,7 +315,7 @@ function ezp_fetch_{$modulename}_$function( \$parameters, \$results_filter=array
             {
                 if ( count( $attributes ) === 0 || in_array( $key, $attributes ) )
                 {
-                    $out[$key] = self::to_array( $val, $depth-1 );
+                    $out[$key] = self::to_array( $val, $depth-1, array(), $with_typecast );
                 }
             }
         }
@@ -291,6 +324,9 @@ function ezp_fetch_{$modulename}_$function( \$parameters, \$results_filter=array
             // not an object: do a simple dump
             $out = $obj;
         }
+//if ( $depth == 1 && is_object( $obj ) && method_exists( $obj, "attributes" ) && method_exists( $obj, "attribute" ) ) {
+//    die(var_export($out, true));
+//}
         return $out;
     }
 }
