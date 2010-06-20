@@ -25,19 +25,22 @@ class eZWebservicesAPIExecutor
     * Run an ezp module view, encapsulate results in the reponse.
     * Extra checking on current user perms to execute the view are controlled via ezwebservicesapi.ini
     * @return array|ggWebservicesFault
+    *
+    * @todo add to options some more filters:
+    *       - on vars we want
+    *       - on per-var attr filter and encoding level
     */
     static function ezpublish_view( $module, $view, $options = array(), $parameters = array(), $unordered_parameters = array(), $post_parameters = array(), $skipaccesscheck = true )
     {
         $options = array_merge( array(
-            'return_type' => self::RETURN_VARIABLES
+            'return_type' => self::RETURN_VARIABLES,
+            'encoding_depth' => 2,
             ), $options );
         // inject back into POST the params we received
         // this should work both for modules that use action parameters and for
         // modules that use eZHTTPTool to check for POST
         foreach ( $post_parameters as $name => $value )
         {
-            var_dump($name);
-            var_dump($value);
             eZHTTPTool::setPostVariable( $name, $value );
         }
 
@@ -96,7 +99,7 @@ class eZWebservicesAPIExecutor
                         // transform ezpo objects to arrays
                         foreach( $tpl->Variables[''] as $name => $value )
                         {
-                            $result[$name] = self::to_array( $value );
+                            $result[$name] = is_array( $value ) ? self::to_array( $value, $options['encoding_depth']+1 ) : self::to_array( $value, $options['encoding_depth'] );
                         }
                     }
                     // return template results and accessory info
