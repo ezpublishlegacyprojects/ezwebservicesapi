@@ -7,6 +7,7 @@
  * @author G. Giunta
  * @version $Id: ggezwebservicesclient.php 102 2009-09-02 09:03:34Z gg $
  * @copyright (C) G. Giunta 2010
+ * @license code licensed under the GNU GPL 2.0: see README
  *
  * @todo add to ezpublish_runview a param to enable/disable following redirects/reruns?
  */
@@ -172,14 +173,8 @@ class eZWebservicesAPIExecutor
      * @param string $objid (an integer or a suite of integers imploded with ',' depending on the obj definition)
      * @param string attribute
      */
-    static function ezpublish_inspect( $params )
+    static function ezpublish_inspect( $classname, $keys, $params=array() )
     {
-        if ( count( $params ) < 2 )
-        {
-            return false;
-        }
-        $classname = (string)$params[0];
-        $keys = (string)$params[1];
 
         $classdef = ezPODocScanner::definition( $classname );
         if ( !$classdef || !$classdef['persistent'] )
@@ -238,7 +233,7 @@ class eZWebservicesAPIExecutor
         }
 
         // dig down the attribute chain
-        for( $i = 2; $i < count( $params ); $i++ )
+        for( $i = 0; $i < count( $params ); $i++ )
         {
             if ( is_array( $obj ) )
             {
