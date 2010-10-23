@@ -1,6 +1,8 @@
 <?php
 /**
- * Class that implements the functions exposed as webservices, plus some helper stuff
+ * Class that implements the functions exposed as webservices, plus some helper stuff.
+ * The logic exposed as webservices is stored here to make it available both via
+ * ezjscore and via ggwebservices calls (i.e. independent of protocol).
  *
  * @author G. Giunta
  * @version $Id: ggezwebservicesclient.php 102 2009-09-02 09:03:34Z gg $
@@ -20,6 +22,8 @@ class eZWebservicesAPIExecutor
     const ERR_MODULEFAILED = -3;
     const ERR_FETCHFAILED = -4;
     const ERR_NOTIMPLEMENTED = -99;
+
+    /*** WEBSERVICES ***/
 
     /**
     * Run an ezp module view, encapsulate results in the reponse.
@@ -99,7 +103,7 @@ class eZWebservicesAPIExecutor
                         // transform ezpo objects to arrays
                         foreach( $tpl->Variables[''] as $name => $value )
                         {
-                            $result[$name] = is_array( $value ) ? self::to_array( $value, $options['encoding_depth']+1 ) : self::to_array( $value, $options['encoding_depth'] );
+                            $result[$name] = is_array( $value ) ? ezPOInspector::to_array( $value, $options['encoding_depth']+1 ) : ezPOInspector::to_array( $value, $options['encoding_depth'] );
                         }
                     }
                     // return template results and accessory info
@@ -142,19 +146,133 @@ class eZWebservicesAPIExecutor
             {
                 foreach( $results as $key => $val )
                 {
-                    $results[$key] = self::to_array( $val, $encode_depth, $results_filter );
+                    $results[$key] = ezPOInspector::to_array( $val, $encode_depth, $results_filter );
                 }
                 return $results;
             }
             else
             {
                 // either scalar, or single ezpo object
-                return self::to_array( $results, $encode_depth, $results_filter );
+                return ezPOInspector::to_array( $results, $encode_depth, $results_filter );
             }
         }
         // logging of error that led to a null here is already done by called code
         return new ggWebservicesFault( self::ERR_FETCHFAILED, "Failed executing fetch function $module/$fetch" );
     }
+
+    /**
+     * Returns an array, in ezPOInspector::objInspect format, describing the
+     * desired persistent object, as defined by its class and id - or the single
+     * po attribute
+     * Example calls:
+     * eZWebservicesAPIExecutor::inspect( array( 'ezcontentobjecttreenode', 2 ) )
+     * eZWebservicesAPIExecutor::inspect( array( 'ezcontentobjecttreenode', 2, 'data_map', 'name', 'contentclass_attribute' ) )
+     *
+     * @param string $classname
+     * @param string $objid (an integer or a suite of integers imploded with ',' depending on the obj definition)
+     * @param string attribute
+     */
+    static function ezpublish_inspect( $params )
+    {
+        if ( count( $params ) < 2 )
+        {
+            return false;
+        }
+        $classname = (string)$params[0];
+        $keys = (string)$params[1];
+
+        $classdef = ezPODocScanner::definition( $classname );
+        if ( !$classdef || !$classdef['persistent'] )
+        {
+            /// @todo log warning
+            return false;
+        }
+        $classname = ezPODocScanner::findClassNameGivenLowerCaseName( $classname );
+        if ( !$classname )
+        {
+            /// @todo log warning
+            return false;
+        }
+        if ( !method_exists( $classname, 'fetch' ) )
+        {
+            /// @todo log warning
+            return false;
+        }
+        if ( count( $classdef['keys'] ) > 1 )
+        {
+            /** Use hardcoded knowledge to invoke fetch functions, as some do not
+             take input parameters in correct order.
+             * Nb: we assume we received the correct number of key elements
+             */
+            $keys = explode( ',', $keys );
+            switch( $classdef )
+            {
+                case 'eZContentObjectAttribute':
+                    // declares 4 keys whereas it only has 2 in its class def!
+                    /// @todo support calls using only 2 items in the keys?
+                    $obj = call_user_func_array( "$classname::fetch", array( $keys[0], $keys[2] ) );
+                    break;
+                case 'eZContentClass':
+                case 'eZContentClassAttribute':
+                    // add a stupid 'asobject' 2nd param in the fetch
+                    $obj = call_user_func_array( "$classname::fetch", array( $keys[0], true, $keys[1] ) );
+                    break;
+                case 'eZBinaryFile':
+                case 'eZContentClassClassGroup':
+                case 'eZMedia':
+                    // simple case: fetch and keys definition agree
+                    $obj = call_user_func_array( "$classname::fetch", $keys );
+                    break;
+                default:
+                    return false;
+            }
+
+        }
+        else
+        {
+            $obj = $classname::fetch( $keys );
+        }
+        if ( !$obj )
+        {
+            return false;
+        }
+
+        // dig down the attribute chain
+        for( $i = 2; $i < count( $params ); $i++ )
+        {
+            if ( is_array( $obj ) )
+            {
+                if ( isset( $obj[$params[$i]] ) )
+                {
+                    $obj = $obj[$params[$i]];
+
+                }
+                else
+                {
+                    /// @todo log warning
+                    return false;
+                }
+            }
+            else
+            {
+                if ( !method_exists( $obj, 'attribute' ) )
+                {
+                    /// @todo log warning
+                    return false;
+                }
+                $obj = $obj->attribute( (string) $params[$i] );
+            }
+        }
+
+        if ( !class_exists( 'ezPOInspector' ) )
+        {
+            eZDebug::writeError( 'Cannot execute ws ezp.inspect: php class ezPOInspector not available. Check that extension ezpersistentobject_inspector is enabled', __METHOD__ );
+            return false;
+        }
+        return ezPOInspector::objInspect( $obj );
+    }
+
+    /*** HELPERS ***/
 
     /**
     * Return the filename (incl. full path) of the file used to cache the
@@ -251,87 +369,6 @@ function ezp_fetch_{$modulename}_$function( \$parameters, \$results_filter=array
         return "\n// EZPUBLISH VIEWS\n" . $vws . "\n// EZPUBLISH FETCHES\n" . $fws;
     }
 
-    /**
-     * Recursive conversion of values to array format.
-     * It recognizes ezpersistentobject descendants, and only converts their
-     * attributes, not their members.
-     * COPIED OVER FROM ggxmlview extension rev. 0.2
-     * @param integer $depth max recursion depth
-     * @param array $attributes a filter on object attributes / array keys to serialize
-     * @return mixed
-     */
-    static function to_array( $obj, $depth=2, $attributes=array(), $with_typecast=true )
-    {
-        if ( ( is_object( $obj ) || is_array( $obj ) ) && $depth < 1 )
-        {
-            return null;
-        }
-
-        if ( is_object( $obj ) && method_exists( $obj, "attributes" ) && method_exists( $obj, "attribute" ) )
-        {
-            // 'template object' (should be an ancestor of ezpo)
-            $out = array();
-            if ( $with_typecast )
-            {
-                $fields = array();
-                if ( method_exists( $obj, "definition" ) )
-                {
-                    $def = $obj->definition();
-                    if ( isset( $def['fields'] ) )
-                    {
-                        $fields = $def['fields'];
-                    }
-                }
-            }
-            foreach( $obj->attributes() as $key )
-            {
-                if ( count( $attributes ) === 0 || in_array( $key, $attributes ) )
-                {
-                    $out[$key] = self::to_array( $obj->attribute( $key ), $depth-1, array(), $with_typecast );
-                    if ( $with_typecast && array_key_exists( $key, $fields ) && isset( $fields[$key]['datatype'] ) )
-                    {
-                        switch( $fields[$key]['datatype'] )
-                        {
-                            case 'string':
-                            case 'text':
-                                break;
-                            case 'int':
-                            case 'integer':
-                                $out[$key] = (integer)$out[$key];
-                                break;
-                            case 'float':
-                                $out[$key] = (float)$out[$key];
-                                break;
-                            case 'bool':
-                            case 'boolean':
-                                $out[$key] = (boolean)$out[$key];
-                                break;
-                        }
-                    }
-                }
-            }
-        }
-        else if ( is_array( $obj ) || is_object( $obj ) )
-        {
-            $out = array();
-            foreach( $obj as $key => $val )
-            {
-                if ( count( $attributes ) === 0 || in_array( $key, $attributes ) )
-                {
-                    $out[$key] = self::to_array( $val, $depth-1, array(), $with_typecast );
-                }
-            }
-        }
-        else
-        {
-            // not an object: do a simple dump
-            $out = $obj;
-        }
-//if ( $depth == 1 && is_object( $obj ) && method_exists( $obj, "attributes" ) && method_exists( $obj, "attribute" ) ) {
-//    die(var_export($out, true));
-//}
-        return $out;
-    }
 }
 
 ?>
