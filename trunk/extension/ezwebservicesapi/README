@@ -19,9 +19,9 @@ Requirements
 o  eZ publish version: Make sure you use eZ publish version 4.0 or higher.
 o  Web Server/Database/PHP version: as indicated in your eZ publish version requirements
 o  Web Browser: no specific requirements
-o  ggwebservices extension, version 0.4 or later
-o  to receive jsonrpc calls, the php JSON extension is needed
-o  to receive xmlrpc calls, the php XMLRPC extension is needed
+o  at least one of the ggwebservices, version 0.4 or later, or ezjscore extensions
+o  to receive jsonrpc calls, ggwebservices and the php JSON extension is needed
+o  to receive xmlrpc calls, ggwebservices and the php XMLRPC extension is needed
 o  the ezjscore extension is recommended for receiving ajax calls
 
 
