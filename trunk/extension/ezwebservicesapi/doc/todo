@@ -3,8 +3,12 @@
 
 - add support for the SkipViewAccessCheck ini file parameter
 
-- add ordering definition: we depend on ggws
+- add ordering definition: we depend on ggws, ezpo_inspector
 - add ant build file
+
+- be smarter about method injection: use __call instead of creating N functions in FunctionList
+
+- implement ezp.inspect in xlrpc/jsonrpc, fetch* and view* in ezjsc
 
 1. more docs
 
