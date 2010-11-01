@@ -22,7 +22,8 @@ class ezWebservicesAPIJSCFunctions
         $module = (string)$params[0];
         $view = (string)$params[1];
         $return_type = eZWebservicesAPIExecutor::RETURN_VARIABLES;
-        $parameters = isset( $params[2] ) ? (array)$params[2] : array();
+        // we do hand-decoding from json here, since ezjscore has no such capability of its own
+        $parameters = isset( $params[2] ) ? json_decode( $params[2], true ) : array();
         $unordered_parameters = isset( $params[3] ) ? (array)$params[3] : array();
         $post_parameters = isset( $params[4] ) ? (array)$params[4] : array();
 
@@ -40,7 +41,8 @@ class ezWebservicesAPIJSCFunctions
         }
         $module = $params[0];
         $fetch = $params[1];
-        $parameters = $params[2];
+        // we do hand-decoding from json here, since ezjscore has no such capability of its own
+        $parameters = json_decode( $params[2], true );
         $results_filter = isset( $params[3] ) ? (array)$params[3] : array();
         $encode_depth = isset( $params[4] ) ? (int)$params[4] : 1;
 
@@ -56,7 +58,8 @@ class ezWebservicesAPIJSCFunctions
         }
         $module = $params[0];
         $operation = $params[1];
-        $parameters = isset( $params[2] ) ? (array)$params[2] : array();
+        // we do hand-decoding from json here, since ezjscore has no such capability of its own
+        $parameters = isset( $params[2] ) ? json_decode( $params[2], true ) : array();
 
         return eZWebservicesAPIExecutor::ezpublish_operation( $module, $operation, $parameters );
     }
