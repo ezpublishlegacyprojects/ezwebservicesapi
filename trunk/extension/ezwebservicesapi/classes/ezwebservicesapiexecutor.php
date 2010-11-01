@@ -167,9 +167,6 @@ class eZWebservicesAPIExecutor
     */
     static function ezpublish_operation( $module, $operation, $parameters = array() )
     {
-var_dump($module);
-var_dump($operation);
-var_dump($parameters);
         $result = eZOperationHandler::execute( $module, $operation, $parameters );
         if ( is_array( $result ) && isset( $result['status'] ) )
         {
