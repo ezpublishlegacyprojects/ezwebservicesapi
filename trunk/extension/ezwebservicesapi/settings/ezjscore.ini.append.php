@@ -8,7 +8,11 @@
 # <root>/ezjscore/call/ezp::inspect::<...to_be_determined...>
 
 [ezjscServer_ezp]
-Class=ezWebservicesAPIJSCFunctions
+# actual class is ezWebservicesAPIJSCFunctions, but it is built dynamically
+# to allow us to introspect existing 
+Class=ezWebservicesAPIJSCFunctionsExtended
+File=extension/ezwebservicesapi/classes/ezwebservicesapijscfunctionsextender.php
+
 # Policies
 ###Functions[]=ezdebug
 ###PermissionPrFunction=enabled

@@ -74,6 +74,11 @@ function ezp_fetchall( $module, $fetch, $parameters = array(), $results_filter =
     return eZWebservicesAPIExecutor::ezpublish_fetch( $module, $fetch, $parameters, $results_filter, $encode_depth );
 }
 
+function ezp_operationall( $module, $operation, $parameters = array() )
+{
+    return eZWebservicesAPIExecutor::ezpublish_operation( $module, $operation, $parameters );
+}
+
 /// This could be simpler if we could have a fixed signature, but number of params is variable...
 function ezp_inspect()
 {
@@ -95,7 +100,7 @@ $cachedfile = eZWebservicesAPIExecutor::initializeFileName();
 $clusterFileHandler = eZClusterFileHandler::instance();
 if ( !$clusterFileHandler->fileExists( $cachedfile ) )
 {
-    eZDebug::writeWarning( "$cachedfile not found", __METHOD__ );
+    eZDebug::writeWarning( "$cachedfile not found, regenerating it", __METHOD__ );
     $code = "<?php \n" . eZWebservicesAPIExecutor::generateInitializeFile() . "\n?>";
     $clusterFileHandler->fileStoreContents( $cachedfile, $code );
 }

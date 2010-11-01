@@ -162,6 +162,23 @@ class eZWebservicesAPIExecutor
     }
 
     /**
+    * Note: there 'might' be operations that return something of use beside status,
+    * but we found little so far in the eZP stantard operations
+    */
+    static function ezpublish_operation( $module, $operation, $parameters = array() )
+    {
+var_dump($module);
+var_dump($operation);
+var_dump($parameters);
+        $result = eZOperationHandler::execute( $module, $operation, $parameters );
+        if ( is_array( $result ) && isset( $result['status'] ) )
+        {
+            return $result['status'];
+        }
+        return $result;
+    }
+
+    /**
      * Returns an array, in ezPOInspector::objInspect format, describing the
      * desired persistent object, as defined by its class and id - or the single
      * po attribute
@@ -271,24 +288,25 @@ class eZWebservicesAPIExecutor
 
     /**
     * Return the filename (incl. full path) of the file used to cache the
-    * dynamically-generated definition of webservices
+    * dynamically-generated definitions of webservices
     */
-    static function initializeFileName()
+    static function initializeFileName( $prefix='' )
     {
         $sys = eZSys::instance();
-        return $sys->cacheDirectory() . '/ezwebservicesapi/initialize.php';
+        return $sys->cacheDirectory() . "/ezwebservicesapi/{$prefix}initialize.php";
     }
 
     /**
-     * Create definition of ws used for views, fetchfunctions
+     * Create definition of ws used for views, fetch functions, operations, in ggws style
      * @return string the php code for inclusion in initialize.php
      *
      * @todo parse view files to spot direct usage of post vars
      */
-    static function generateInitializeFile( $doviews=true, $dofetches=true )
+    static function generateInitializeFile( $doviews=true, $dofetches=true, $dooperations=true )
     {
         $vws = '';
         $fws = '';
+        $ows = '';
         $ini = ezINI::instance( 'ezwebservicesapi.ini' );
         $skip = $ini->variable( 'ws_runview', 'SkipViews' );
         foreach( eZModuleScanner::getModuleList() as $modulename => $path )
@@ -339,8 +357,8 @@ class eZWebservicesAPIExecutor
                         }*/
                         //$p_s = count( $view['unordered'] ) ? implode( ', ', array_fill( 0, count( $view['unordered'], "'mixed'" ) ) ) : '';
                         $vws .= "
-\$server->registerFunction( 'ezp.view.$modulename.$viewname', array( " . implode( ', ', $param_array ) . " ), 'struct', 'Executes the view $modulename/$viewname. Params: $help. See http://ez.no/doc/ez_publish/technical_manual/4_x/reference/modules/$modulename/views/$view' );
-\$server->registerFunction( 'ezp.view.$modulename.$viewname', array( " . implode( ', ', $param_array ) . ", 'struct' ), 'struct', 'Executes the view $modulename/$viewname. Params: $help, struct \$post_parameters. See http://ez.no/doc/ez_publish/technical_manual/4_x/reference/modules/$modulename/views/$view' );
+\$server->registerFunction( 'ezp.view.$modulename.$viewname', array( " . implode( ', ', $param_array ) . " ), 'struct', 'Executes the view $modulename/$viewname. Params: $help. See http://doc.ez.no/eZ-Publish/Technical-manual/4.x/Reference/Modules/$modulename/views/$view' );
+\$server->registerFunction( 'ezp.view.$modulename.$viewname', array( " . implode( ', ', $param_array ) . ", 'struct' ), 'struct', 'Executes the view $modulename/$viewname. Params: $help, struct \$post_parameters. See http://doc.ez.no/eZ-Publish/Technical-manual/4.x/Reference/Modules/$modulename/views/$view' );
 function ezp_view_{$modulename}_$viewname( \$parameters ) { return eZWebservicesAPIExecutor::ezpublish_view( '$modulename', '$viewname', \$parameters ); }
 ";
                     }
@@ -350,18 +368,209 @@ function ezp_view_{$modulename}_$viewname( \$parameters ) { return eZWebservices
                     $functions = eZFunctionHandler::moduleFunctionInfo( $modulename );
                     foreach( $functions->FunctionList as $function => $dummy )
                     {
+                        $params = array();
+                        foreach ( $op['parameters'] as $id => $param )
+                        {
+                            $params[] = '"' . $param['name'] . '" ('. $param['type'] . ')';
+                            if ( @$param['required'] )
+                            {
+                                $params[ count($params) - 1 ] .= ' required';
+                            }
+                        }
+                        if ( count( $params ) )
+                        {
+                            $params = 'Struct members: ' . implode( $params, ', ' ) . '.';
+                        }
+                        else
+                        {
+                            $params = 'Struct members: none.';
+                        }
+                        /// @todo do not register struct if no params... (NB: API break!)
                         $fws .= "
-\$server->registerFunction( 'ezp.fetch.$modulename.$function', array( 'struct' ), 'mixed', 'Runs the fetch function $modulename/$function. See: http://ez.no/doc/ez_publish/technical_manual/4_x/reference/modules/$modulename/fetch_functions/$function' );
-\$server->registerFunction( 'ezp.fetch.$modulename.$function', array( 'struct', 'array' ), 'mixed', 'Runs the fetch function $modulename/$function, filtering output columns. See: http://ez.no/doc/ez_publish/technical_manual/4_x/reference/modules/$modulename/fetch_functions/$function' );
-\$server->registerFunction( 'ezp.fetch.$modulename.$function', array( 'struct', 'array', 'int' ), 'mixed', 'Runs the fetch function $modulename/$function, filtering output columns and limiting encoding depth. See: http://ez.no/doc/ez_publish/technical_manual/4_x/reference/modules/$modulename/fetch_functions/$function' );
+\$server->registerFunction( 'ezp.fetch.$modulename.$function', array( 'struct' ), 'mixed', 'Runs the fetch function $modulename/$function. $params See: http://doc.ez.no/eZ-Publish/Technical-manual/4.x/Reference/Modules/$modulename/Fetch-functions/$function' );
+\$server->registerFunction( 'ezp.fetch.$modulename.$function', array( 'struct', 'array' ), 'mixed', 'Runs the fetch function $modulename/$function, filtering output columns. $params See: http://doc.ez.no/eZ-Publish/Technical-manual/4.x/Reference/Modules/$modulename/Fetch-functions/$function' );
+\$server->registerFunction( 'ezp.fetch.$modulename.$function', array( 'struct', 'array', 'int' ), 'mixed', 'Runs the fetch function $modulename/$function, filtering output columns and limiting encoding depth. $params See: http://doc.ez.no/eZ-Publish/Technical-manual/4.x/Reference/Modules/$modulename/Fetch-functions/$function' );
 function ezp_fetch_{$modulename}_$function( \$parameters, \$results_filter=array(), \$encode_depth=1 ) { return eZWebservicesAPIExecutor::ezpublish_fetch( '$modulename', '$function', \$parameters, \$results_filter, \$encode_depth ); }
 ";
+                    }
+                }
+                if ( $dooperations )
+                {
+                    $moduleOperationInfo = new eZModuleOperationInfo( $modulename );
+                    /// @todo prevent warning to be generated here
+                    $moduleOperationInfo->loadDefinition();
+                    if ( $moduleOperationInfo->isValid() )
+                    {
+                        foreach( $moduleOperationInfo->OperationList as $op )
+                        {
+                            $operation = $op['name'];
+                            $params = array();
+                            foreach ( $op['parameters'] as $id => $param )
+                            {
+                                $params[] = '"' . $param['name'] . '" ('. $param['type'] . ')';
+                                if ( @$param['required'] )
+                                {
+                                    $params[ count($params) - 1 ] .= ' required';
+                                }
+                            }
+                            if ( count( $params ) )
+                            {
+                                $params = 'Struct members: ' . implode( $params, ', ' );
+                                $struct = "'struct'";
+                            }
+                            else
+                            {
+                                $params = 'Parameters: none';
+                                $struct = '';
+                            }
+                            $ows .= "
+\$server->registerFunction( 'ezp.operation.$modulename.$operation', array( $struct ), 'mixed', 'Executes the operation $modulename/$operation. $params' );
+function ezp_operation_{$modulename}_$operation( \$parameters=array() ) { return eZWebservicesAPIExecutor::ezpublish_operation( '$modulename', '$operation', \$parameters ); }
+";
+                        }
                     }
                 }
             }
         }
 
-        return "\n// EZPUBLISH VIEWS\n" . $vws . "\n// EZPUBLISH FETCHES\n" . $fws;
+        return "\n// EZPUBLISH VIEWS\n" . $vws . "\n// EZPUBLISH FETCHES\n" . $fws . "\n// EZPUBLISH OPERATIONS\n" . $ows;
+    }
+
+    /**
+     * Create definition of ws used for views, fetch functions, operations, in ezjsc style
+     * @return string the php code for inclusion in initialize.php
+     *
+     * @todo parse view files to spot direct usage of post vars
+     */
+    static function generateJSCInitializeFile( $doviews=true, $dofetches=true, $dooperations=true )
+    {
+        $vws = '';
+        $fws = '';
+        $ows = '';
+        $ini = ezINI::instance( 'ezwebservicesapi.ini' );
+        $skip = $ini->variable( 'ws_runview', 'SkipViews' );
+        foreach( eZModuleScanner::getModuleList() as $modulename => $path )
+        {
+
+            /// @todo !important optimize: do not load $module, include directly module.php
+            $module = eZModule::exists( $modulename );
+            if ( $module instanceof eZModule )
+            {
+                if ( $doviews )
+                {
+                    if ( in_array( $modulename, $skip ) )
+                    {
+                        continue;
+                    }
+                    foreach( $module->attribute( 'views' ) as $viewname => $view )
+                    {
+                        if ( in_array( "$modulename/$viewname", $skip ) )
+                        {
+                            continue;
+                        }
+
+                        /*$view = array_merge( array(
+                            'params' => array(),
+                            'unordered_params' => array(),
+                            'post_action_parameters' => array(),
+                            'single_post_actions' => array(),
+                            ), $view );
+                        $param_array = array( "'struct'" ); // 1st param: options
+                        $help = 'struct $options';
+                        foreach( $view['params'] as $p ) // positional params
+                        {
+                            $param_array[] = "'mixed'";
+                            $help .= ", mixed $p";
+                        }
+                        if ( count( $view['unordered_params'] ) )
+                        {
+                            $param_array[] = "'struct'"; // unordered params
+                            /// @todo add description of params into help text
+                            $help .= ', struct $unordered_parameters';
+                        }*/
+                        // POST params are always added, just in case they are used by module code
+                        /*if ( count( $view['post_action_parameters'] ) > 0 || count( $view['single_post_actions'] ) > 0 )
+                           {
+                           $param_array[] = "'struct'"; // post params
+                           /// @todo add description of params into help text
+                           $help .= ', struct $post_parameters';
+                           }*/
+                        //$p_s = count( $view['unordered'] ) ? implode( ', ', array_fill( 0, count( $view['unordered'], "'mixed'" ) ) ) : '';
+                        $vws .= "
+static function view_{$modulename}_$viewname( \$params ) { return self::viewall( array_merge( array( '$modulename', '$viewname' ), \$params ) ); }
+";
+                    }
+                }
+                if ( $dofetches )
+                {
+                    $functions = eZFunctionHandler::moduleFunctionInfo( $modulename );
+                    foreach( $functions->FunctionList as $function => $dummy )
+                    {
+                        /*$params = array();
+                        foreach ( $op['parameters'] as $id => $param )
+                        {
+                            $params[] = '"' . $param['name'] . '" ('. $param['type'] . ')';
+                            if ( @$param['required'] )
+                            {
+                                $params[ count($params) - 1 ] .= ' required';
+                            }
+                        }
+                        if ( count( $params ) )
+                        {
+                            $params = 'Struct members: ' . implode( $params, ', ' ) . '.';
+                        }
+                        else
+                        {
+                            $params = 'Struct members: none.';
+                        }*/
+                        /// @todo: count the required params, and validate them inside
+                        ///        the newly created method
+                        $fws .= "
+static function fetch_{$modulename}_$function( \$params ) { return self::fetchall( array_merge( array( '$modulename', '$function' ), \$params ) ); }
+";
+                    }
+                }
+                if ( $dooperations )
+                {
+                    $moduleOperationInfo = new eZModuleOperationInfo( $modulename );
+                    /// @todo prevent warning to be generated here
+                    $moduleOperationInfo->loadDefinition();
+                    if ( $moduleOperationInfo->isValid() )
+                    {
+                        foreach( $moduleOperationInfo->OperationList as $op )
+                        {
+                            $operation = $op['name'];
+                            $params = array();
+                            /*foreach ( $op['parameters'] as $id => $param )
+                            {
+                                $params[] = '"' . $param['name'] . '" ('. $param['type'] . ')';
+                                if ( @$param['required'] )
+                                {
+                                    $params[ count($params) - 1 ] .= ' required';
+                                }
+                            }
+                            if ( count( $params ) )
+                            {
+                                $params = 'Struct members: ' . implode( $params, ', ' );
+                                $struct = "'struct'";
+                            }
+                            else
+                            {
+                                $params = 'Parameters: none';
+                                $struct = '';
+                            }*/
+                            /// @todo: count the required params, and validate them inside
+                            ///        the newly created method
+                            $ows .= "
+static function operation_{$modulename}_$operation( \$params ) { return self::operationall( array_merge( array( '$modulename', '$operation' ), \$params ) ); }
+";
+                        }
+                    }
+                }
+            }
+        }
+
+        return "class ezWebservicesAPIJSCFunctionsExtended extends ezWebservicesAPIJSCFunctions {\n// EZPUBLISH VIEWS\n" . $vws . "\n// EZPUBLISH FETCHES\n" . $fws . "\n// EZPUBLISH OPERATIONS\n" . $ows . "\n}\n";
     }
 
 }

@@ -6,8 +6,7 @@
  * @copyright (c) 2010 G. Giunta
  * @license code licensed under the GNU GPL 2.0: see README
  *
- * @todo add dynamically to this class all methods coming from views/fetches,
- * @todo implement viewall and fetchall
+ * @todo add dynamically to this class all methods coming from views/fetches/operations,
  */
 
 class ezWebservicesAPIJSCFunctions
@@ -46,6 +45,20 @@ class ezWebservicesAPIJSCFunctions
         $encode_depth = isset( $params[4] ) ? (int)$params[4] : 1;
 
         return eZWebservicesAPIExecutor::ezpublish_fetch( $module, $fetch, $parameters, $results_filter, $encode_depth );
+    }
+
+    static function operationall( $params )
+    {
+        if ( count( $params ) < 2 )
+        {
+            /// @todo log warning
+            return false;
+        }
+        $module = $params[0];
+        $operation = $params[1];
+        $parameters = isset( $params[2] ) ? (array)$params[2] : array();
+
+        return eZWebservicesAPIExecutor::ezpublish_operation( $module, $operation, $parameters );
     }
 
     static function inspect( $params )
