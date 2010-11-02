@@ -1,4 +1,5 @@
-- add support for calling via webservices any existing module operation, much in teh same way as views are
+- make sure that debug messages printed when bad params are received in ws calls
+  or ws called without perms are equivalent bewteen ezjsc and xmlrpc/jsonrpc protrocols
 
 - allow caller to set the encoding level and attr. filter to be used per variable on the variables returned by ezp.view.xxx;
   also allow to filter out desired vars
@@ -6,11 +7,12 @@
 - add support for the SkipViewAccessCheck ini file parameter
 
 - add ordering definition: we depend on ggws, ezpo_inspector
+
 - add ant build file
 
 - be smarter about method injection: use __call instead of creating N functions in FunctionList
 
-- implement ezp.inspect in xlrpc/jsonrpc, fetch* and view* in ezjsc
+- implement ezp.inspect in xlrpc/jsonrpc
 
 1. more docs
 
@@ -24,4 +26,5 @@
 
 3. other ideas: besides running views, we could run
 - fetch functions [DONE!]
-- other operations?
+- module operations [DONE!]
+- other stuff?

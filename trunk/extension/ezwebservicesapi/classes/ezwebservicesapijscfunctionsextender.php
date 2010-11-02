@@ -6,12 +6,14 @@
  * injected into it in a way that later they can be checked using method_exists,
  * as ezjscore does.
  * The source code is stored in a file in the cache system, so that the autoload
- * mechanism will not bother with us.
+ * mechanism will not bother with it.
  *
  * What a long filename, isn't it?
  *
  * @version $Id$
- * @copyright 2010
+ * @author G. Giunta
+ * @copyright (C) G. Giunta 2010
+ * @license code licensed under the GNU GPL 2.0: see README
  */
 
 

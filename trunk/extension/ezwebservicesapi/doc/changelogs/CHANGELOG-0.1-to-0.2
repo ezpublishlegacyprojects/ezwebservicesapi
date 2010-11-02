@@ -2,16 +2,21 @@ Changes from 0.1 to 0.2 - released 2010/xx/yy
 
 *General:
 
-- improved the encoding of ezpersistentobject descendant classes
-  (eg. ezcontentobjectreenode as returned by fetch content/list):
-  now the proper type is enforced for scalar attributes
+- added ezjscore support. Now all webservices can be called using the 3
+  protocols: ezjscore, xmlrpc, jsonrpc
 
 - added a new webservice: ezp.inspect. It is used for drilldown analysis of
   eZPersistentObject subclasses, and is needed for a very cool new debug
   template operator in the ezdebug_operator extension
 
-- added ezjscore support. Now all webservices can be called using the 3
-  protocols: ezjscore, xmlrpc, jsonrpc
+- added a new set of webservices allowing to execute all exisitng module
+  operations.
+  Ex: ezp.operation.content.hide (ezp::operation::content::hide in ezjsc syntax)
+  Here again, policy limitations are available with one limitation per operation
+
+- improved the encoding of ezpersistentobject descendant classes
+  (eg. ezcontentobjectreenode as returned by fetch content/list):
+  now the proper type is enforced for scalar attributes
 
 *Bugfixes:
 

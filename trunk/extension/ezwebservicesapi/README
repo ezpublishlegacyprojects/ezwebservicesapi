@@ -1,5 +1,5 @@
-eZ Webservices API extension for eZ publish
-===================================
+eZ Webservices API extension for eZ Publish
+===========================================
 
 An extension aiming to expose via webservice calls (XMLRPC, JSONRPC, EZJSCORE,
 one day even SOAP) all existing eZ Publish functionality, starting with
@@ -7,7 +7,7 @@ one day even SOAP) all existing eZ Publish functionality, starting with
 - module views
 - module operations
 
-Please note that SOAP support is not available as of release 0.2
+Please note that SOAP support is still not available as of release 0.2
 
 
 License
@@ -28,19 +28,25 @@ o  the ezjscore extension is recommended for receiving ajax calls
 
 Installation
 ============
-1. Make sure the ggwebservices extension is present and active.
-   While at it, please read the documentation that comes with it.
+1. Make sure either the ggwebservices or ezjscore extensions (or both) are
+   present and active.
+   While at it, please read the documentation that comes with them.
 
 2. Standard eZ Publish extension installation method:
-   - copy the files from the zip under the extension directory
-   - activate the extension either via the admin interface or by editing
-     site.ini.append.php + regenerating autoloads
+   - copy the files from the zip in the "extension" directory
+   - activate the extension either via the Administration Interface or by editing
+     site.ini.append.php + regenerating autoloads via cli script
 
 3. Assign access policies to grant execution permissions on the desired
    webservices to those user roles that will be accessing them:
-   module: webservices
-   function: execute
-   limitation: it is possible to limit execution by single webservice
+   - for ggwebservice calls (xmlrpc/jsonrpc):
+     module: webservices
+     function: execute
+     limitation: it is possible to limit execution by single webservice
+   - for ezjscore calls (ajax):
+     module: ezwebservicesapi
+     function: execute
+     limitation: it is possible to limit execution by single webservice
 
 
 Usage
@@ -50,16 +56,19 @@ eZ Publish installation.
 
 The supported protocols are, as of the current version, XMLRPC and JSONRPC and
 EZJSCORE.
-Ajax calls from the eZ Publish web pages of the server itself are also supported
-via the $.jsonrpc (jquery) and Y.io.jsonrpc (yui) javascript functions that come
-bundled in the ggwebservices extension.
 
-The exact list of webservices will depend on the extensions you have enabled,
-including:
-- three generic webservices: ezp.viewall, ezp.fetchall, ezp_operationall
-- one webservice for every fetch function: ezp.fetch.class.attribute_list etc...
-- one webservice for every module view: ezp.view.collaboration.view etc...
-- one webservice for every module operation: ezp.operation.content.hide etc...
+Ajax calls from the eZ Publish web pages of the server itself are supported
+via the $.jsonrpc (jquery) and Y.io.jsonrpc (yui) javascript functions that come
+bundled in the ggwebservices extension and, of course, via the $.ez and Y.io.ez
+javascript functions that come bundled in the ezjscore extension.
+
+The exact list of webservices will depend on all the modules you have enabled,
+and will include:
+- three generic webservices: ezp.viewall, ezp.fetchall, ezp.operationall
+  (NB: these ones are not available as ezjscore calls)
+- one webservice for every fetch function. eg: ezp.fetch.class.attribute_list
+- one webservice for every module view. eg: ezp.view.collaboration.view
+- one webservice for every module operation. eg: ezp.operation.content.hide
 
 [Tip: using the ggsysinfo extension, you can find out the complete list of views,
 fetch functions and operations available in every module in your installation.]
@@ -77,7 +86,7 @@ mixed $result = ezp.fetch.$module.$fetch_function(
 )
 
 The result is the same that you would get when calling the fetch function in a template,
-which means in general an array of objects.
+which means in general an array of objects (null is also a valid result).
 
 For module views, the signature is:
 
@@ -94,17 +103,17 @@ The result depends on the value correspoding to the 'return_type' key in the $op
 2 - the webservice will return (as string) the result of executing the template associated with the view
 Note that due to the way the eZ Publish kernel works, the view template is always executed even when passing 'return_type' = 1
 
-Note: when using ezjscore protocol, the method names change slightly and become:
-ezp::view_collaboration_view
-ezp::operation_content_hide
+When using ezjscore protocol, the method names change slightly and become:
+ezp::view::collaboration::view
+ezp::operation::content::hide
 etc...
 
 To pass nested parameters, the json format is used, so that calls look like the following:
-<root>/ezjscore/call/ezp::fetch_content_list::{"parent_node_id":2}
-<root>/ezjscore/call/ezp::operation_user_preferences::{"key":"a_new_key","value":123}
+<root>/ezjscore/call/ezp::fetch::content::list::{"parent_node_id":2}
+<root>/ezjscore/call/ezp::operation::user::preferences::{"key":"a_new_key","value":123}
 
 
-Plus the three generic webservices:
+Signature of the three generic webservices:
 
 mixed $result = ezp.fetchall(
   string $module,              // name of the module
@@ -139,18 +148,19 @@ The URLs to be used to access the webservices are:
 
 http://ezp.server/etc/index.php/siteaccess/webservices/execute/jsonrpc
 http://ezp.server/etc/index.php/siteaccess/webservices/execute/xmlrpc
+http://ezp.server/etc/index.php/siteaccess/ezjscore/call
 
 (alternatively, some optimized controller file can be put in place. Read the
 documentation of ggwebservices for more details)
 
 The ggwebservices extension includes a graphical debugger that can be used to
-discover / test the new webservices. It is available in the administration
-interface of eZ Publish in the 'WS Debugger' tab.
+discover / test the new webservices. It is available in the Administration
+Interface of eZ Publish in the 'WS Debugger' tab.
 
 Last but not least: the list of existing module views, operations and fetch functions
-is cached by this extension, so that it has not to be reaclculated upon every invocation
+is cached by this extension, so that it has not to be recalculated upon every invocation
 of a webservice. After activating extensions, this cache should be rebuilt, for
-the new views and fetch functions (if any) to appear as websevices.
+the new views, operations and fetch functions (if any) to appear as websevices.
 - if running on eZ Publish 4.3 or later, this can be done in the administration interface
 - if running on eZ Publish 4.2 or later, the directory
   var/siteaccess/cache/ezwebservicesapi

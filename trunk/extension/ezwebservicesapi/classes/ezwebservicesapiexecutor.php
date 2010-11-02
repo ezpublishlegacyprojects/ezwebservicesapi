@@ -4,8 +4,8 @@
  * The logic exposed as webservices is stored here to make it available both via
  * ezjscore and via ggwebservices calls (i.e. independent of protocol).
  *
+ * @version $Id$
  * @author G. Giunta
- * @version $Id: ggezwebservicesclient.php 102 2009-09-02 09:03:34Z gg $
  * @copyright (C) G. Giunta 2010
  * @license code licensed under the GNU GPL 2.0: see README
  *
@@ -363,12 +363,12 @@ function ezp_view_{$modulename}_$viewname( \$parameters ) { return eZWebservices
                 if ( $dofetches )
                 {
                     $functions = eZFunctionHandler::moduleFunctionInfo( $modulename );
-                    foreach( $functions->FunctionList as $function => $dummy )
+                    foreach( $functions->FunctionList as $function => $fn )
                     {
                         $params = array();
-                        foreach ( $op['parameters'] as $id => $param )
+                        foreach ( $fn['parameters'] as $id => $param )
                         {
-                            $params[] = '"' . $param['name'] . '" ('. $param['type'] . ')';
+                            $params[] = '"' . $param['name'] . '" ('. @$param['type'] . ')';
                             if ( @$param['required'] )
                             {
                                 $params[ count($params) - 1 ] .= ' required';
@@ -433,17 +433,17 @@ function ezp_operation_{$modulename}_$operation( \$parameters=array() ) { return
         return "\n// EZPUBLISH VIEWS\n" . $vws . "\n// EZPUBLISH FETCHES\n" . $fws . "\n// EZPUBLISH OPERATIONS\n" . $ows;
     }
 
+
+    // ### ACCESS CHECKING ###
+
     /**
-     * Create definition of ws used for views, fetch functions, operations, in ezjsc style
-     * @return string the php code for inclusion in initialize.php
-     *
-     * @todo parse view files to spot direct usage of post vars
-     */
-    static function generateJSCInitializeFile( $doviews=true, $dofetches=true, $dooperations=true )
+    * Create list of existing ws methods to be used as limitations for policies
+    * to the ezwebservicesapi/execute access function
+    */
+    static function getMethodsList( $doviews=true, $dofetches=true, $dooperations=true )
     {
-        $vws = '';
-        $fws = '';
-        $ows = '';
+        $function_list = array( 'inspect' );
+
         $ini = ezINI::instance( 'ezwebservicesapi.ini' );
         $skip = $ini->variable( 'ws_runview', 'SkipViews' );
         foreach( eZModuleScanner::getModuleList() as $modulename => $path )
@@ -465,37 +465,7 @@ function ezp_operation_{$modulename}_$operation( \$parameters=array() ) { return
                         {
                             continue;
                         }
-
-                        /*$view = array_merge( array(
-                            'params' => array(),
-                            'unordered_params' => array(),
-                            'post_action_parameters' => array(),
-                            'single_post_actions' => array(),
-                            ), $view );
-                        $param_array = array( "'struct'" ); // 1st param: options
-                        $help = 'struct $options';
-                        foreach( $view['params'] as $p ) // positional params
-                        {
-                            $param_array[] = "'mixed'";
-                            $help .= ", mixed $p";
-                        }
-                        if ( count( $view['unordered_params'] ) )
-                        {
-                            $param_array[] = "'struct'"; // unordered params
-                            /// @todo add description of params into help text
-                            $help .= ', struct $unordered_parameters';
-                        }*/
-                        // POST params are always added, just in case they are used by module code
-                        /*if ( count( $view['post_action_parameters'] ) > 0 || count( $view['single_post_actions'] ) > 0 )
-                           {
-                           $param_array[] = "'struct'"; // post params
-                           /// @todo add description of params into help text
-                           $help .= ', struct $post_parameters';
-                           }*/
-                        //$p_s = count( $view['unordered'] ) ? implode( ', ', array_fill( 0, count( $view['unordered'], "'mixed'" ) ) ) : '';
-                        $vws .= "
-static function view_{$modulename}_$viewname( \$params ) { return self::viewall( array_merge( array( '$modulename', '$viewname' ), \$params ) ); }
-";
+                        $function_list[] = "view_{$modulename}_$viewname";
                     }
                 }
                 if ( $dofetches )
@@ -503,28 +473,7 @@ static function view_{$modulename}_$viewname( \$params ) { return self::viewall(
                     $functions = eZFunctionHandler::moduleFunctionInfo( $modulename );
                     foreach( $functions->FunctionList as $function => $dummy )
                     {
-                        /*$params = array();
-                        foreach ( $op['parameters'] as $id => $param )
-                        {
-                            $params[] = '"' . $param['name'] . '" ('. $param['type'] . ')';
-                            if ( @$param['required'] )
-                            {
-                                $params[ count($params) - 1 ] .= ' required';
-                            }
-                        }
-                        if ( count( $params ) )
-                        {
-                            $params = 'Struct members: ' . implode( $params, ', ' ) . '.';
-                        }
-                        else
-                        {
-                            $params = 'Struct members: none.';
-                        }*/
-                        /// @todo: count the required params, and validate them inside
-                        ///        the newly created method
-                        $fws .= "
-static function fetch_{$modulename}_$function( \$params ) { return self::fetchall( array_merge( array( '$modulename', '$function' ), \$params ) ); }
-";
+                        $function_list[] = "fetch_{$modulename}_$function";
                     }
                 }
                 if ( $dooperations )
@@ -537,37 +486,74 @@ static function fetch_{$modulename}_$function( \$params ) { return self::fetchal
                         foreach( $moduleOperationInfo->OperationList as $op )
                         {
                             $operation = $op['name'];
-                            $params = array();
-                            /*foreach ( $op['parameters'] as $id => $param )
-                            {
-                                $params[] = '"' . $param['name'] . '" ('. $param['type'] . ')';
-                                if ( @$param['required'] )
-                                {
-                                    $params[ count($params) - 1 ] .= ' required';
-                                }
-                            }
-                            if ( count( $params ) )
-                            {
-                                $params = 'Struct members: ' . implode( $params, ', ' );
-                                $struct = "'struct'";
-                            }
-                            else
-                            {
-                                $params = 'Parameters: none';
-                                $struct = '';
-                            }*/
-                            /// @todo: count the required params, and validate them inside
-                            ///        the newly created method
-                            $ows .= "
-static function operation_{$modulename}_$operation( \$params ) { return self::operationall( array_merge( array( '$modulename', '$operation' ), \$params ) ); }
-";
+                            $function_list[] = "operation_{$modulename}_{$op['name']}";
                         }
                     }
                 }
             }
         }
 
-        return "class ezWebservicesAPIJSCFunctionsExtended extends ezWebservicesAPIJSCFunctions {\n// EZPUBLISH VIEWS\n" . $vws . "\n// EZPUBLISH FETCHES\n" . $fws . "\n// EZPUBLISH OPERATIONS\n" . $ows . "\n}\n";
+        $result = array();
+        sort( $function_list );
+        foreach( array_unique( $function_list ) as $method )
+        {
+            $result[] = array( 'name' => $method, 'id' => md5( $method ) );
+        }
+        return $result;
+    }
+
+    /**
+     * Used by the permission system: check if current user has access to ws method.
+     * This is needed to be able to have fine-grained permissions on webservices
+     * exposed via ezjscore (which does not handle permissions like we want)
+     *
+     * @param string $functionName
+     * @param ezuser $user
+     */
+    static function checkAccess( $functionName, $user=null )
+    {
+        if ( $user == null )
+        {
+            $user = eZUser::currentUser();
+        }
+
+        $access = false;
+        $accessResult = $user->hasAccessTo( 'ezwebservicesapi' , 'execute' );
+        $accessWord = $accessResult['accessWord'];
+
+        if ( $accessWord == 'yes' )
+        {
+            $access = true;
+        }
+        else if ( $accessWord != 'no' ) // with limitation
+        {
+            $currentsa = eZSys::ezcrc32( $GLOBALS['eZCurrentAccess']['name'] );
+            $functionName = md5( $functionName );
+            $accessws = 1;
+            $accesssa = 1;
+            foreach ( $accessResult['policies'] as $key => $policy )
+            {
+                if ( isset( $policy['Webservices'] ) && $accessws === 1 )
+                {
+                    $accessws = false;
+                }
+                if ( isset( $policy['Webservices'] ) && in_array( $functionName, $policy['Webservices'] ) )
+                {
+                    $accessws = true;
+                }
+                if ( isset( $policy['SiteAccess'] ) && $accesssa === 1 )
+                {
+                    $accesssa = false;
+                }
+                if ( isset( $policy['SiteAccess'] ) && in_array( $currentsa, $policy['SiteAccess'] ) )
+                {
+                    $accesssa = true;
+                }
+            }
+            $access = $accessws && $accesssa;
+        }
+
+        return $access;
     }
 
 }

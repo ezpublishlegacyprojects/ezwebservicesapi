@@ -3,9 +3,10 @@
  * Class that scans all active module definitions
  * has been copied to ggsysinfo, too...
  *
+ * @version $Id$
  * @author G. Giunta
- * @version $Id: ggezwebservicesclient.php 102 2009-09-02 09:03:34Z gg $
  * @copyright (C) G. Giunta 2010
+ * @license code licensed under the GNU GPL 2.0: see README
  */
 
 class eZModuleScanner
