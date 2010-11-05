@@ -1,6 +1,8 @@
 - make sure that debug messages printed when bad params are received in ws calls
   or ws called without perms are equivalent bewteen ezjsc and xmlrpc/jsonrpc protrocols
 
+- when ezpo_inspector is enabled, use it to augment textual descriptions of xmlrpc/jsonrpc webservices
+
 - allow caller to set the encoding level and attr. filter to be used per variable on the variables returned by ezp.view.xxx;
   also allow to filter out desired vars
 
