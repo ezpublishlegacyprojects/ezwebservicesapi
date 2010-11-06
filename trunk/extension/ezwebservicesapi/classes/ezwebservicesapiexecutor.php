@@ -319,6 +319,16 @@ class eZWebservicesAPIExecutor
                     {
                        continue;
                     }
+                    // verify if module is native or in an extension
+                    /// @bug the extension dir could be changed, recover it via a function call
+                    if ( preg_match( '#extension/([^/]+)/modules/#', $path, $matches ) )
+                    {
+                        $extension = $matches[1];
+                    }
+                    else
+                    {
+                        $extension = '';
+                    }
                     foreach( $module->attribute( 'views' ) as $viewname => $view )
                     {
                         if ( in_array( "$modulename/$viewname", $skip ) )
@@ -353,9 +363,21 @@ class eZWebservicesAPIExecutor
                             $help .= ', struct $post_parameters';
                         }*/
                         //$p_s = count( $view['unordered'] ) ? implode( ', ', array_fill( 0, count( $view['unordered'], "'mixed'" ) ) ) : '';
+                        $more = '';
+                        if ( $extension == '' )
+                        {
+                            $more = " See http://doc.ez.no/eZ-Publish/Technical-manual/4.x/Reference/Modules/$modulename/views/$viewname for more details.";
+                        }
+                        $desc = '';
+                        if ( class_exists( 'ezViewDocScanner' ) )
+                        {
+                            $desc = ezViewDocScanner::definition( $modulename, $viewname );
+                            //$desc = var_export(  $desc );
+                            $desc = isset( $desc['desc'] ) ? rtrim( str_replace( "'", "\\'", $desc['desc'] ), '.' ) . ' ' : '';
+                        }
                         $vws .= "
-\$server->registerFunction( 'ezp.view.$modulename.$viewname', array( " . implode( ', ', $param_array ) . " ), 'struct', 'Executes the view $modulename/$viewname. Params: $help. See http://doc.ez.no/eZ-Publish/Technical-manual/4.x/Reference/Modules/$modulename/views/$view' );
-\$server->registerFunction( 'ezp.view.$modulename.$viewname', array( " . implode( ', ', $param_array ) . ", 'struct' ), 'struct', 'Executes the view $modulename/$viewname. Params: $help, struct \$post_parameters. See http://doc.ez.no/eZ-Publish/Technical-manual/4.x/Reference/Modules/$modulename/views/$view' );
+\$server->registerFunction( 'ezp.view.$modulename.$viewname', array( " . implode( ', ', $param_array ) . " ), 'struct', '$desc(executes the view $modulename/$viewname). Params: $help.$more' );
+\$server->registerFunction( 'ezp.view.$modulename.$viewname', array( " . implode( ', ', $param_array ) . ", 'struct' ), 'struct', '$desc(executes the view $modulename/$viewname). Params: $help, struct \$post_parameters.$more' );
 function ezp_view_{$modulename}_$viewname( \$parameters ) { return eZWebservicesAPIExecutor::ezpublish_view( '$modulename', '$viewname', \$parameters ); }
 ";
                     }
@@ -382,11 +404,25 @@ function ezp_view_{$modulename}_$viewname( \$parameters ) { return eZWebservices
                         {
                             $params = 'Struct members: none.';
                         }
+                        $more = '';
+                        if ( $extension == '' )
+                        {
+                            $more = " See http://doc.ez.no/eZ-Publish/Technical-manual/4.x/Reference/Modules/$modulename/Fetch-functions/$function for more details.";
+                        }
+                        $desc = '';
+                        $returns = '';
+                        if ( class_exists( 'ezFetchDocScanner' ) )
+                        {
+                            $desc = ezFetchDocScanner::definition( $modulename, $function );
+                            //$desc = var_export(  $desc );
+                            $returns = isset( $desc['return'] ) ? 'Returns: ' . str_replace( "'", "\\'", $desc['return'] ) . ' ' : '';
+                            $desc = isset( $desc['desc'] ) ? str_replace( "'", "\\'", rtrim( $desc['desc'] , '.' ) ). ' ' : '';
+                        }
                         /// @todo do not register struct if no params... (NB: API break!)
                         $fws .= "
-\$server->registerFunction( 'ezp.fetch.$modulename.$function', array( 'struct' ), 'mixed', 'Runs the fetch function $modulename/$function. $params See: http://doc.ez.no/eZ-Publish/Technical-manual/4.x/Reference/Modules/$modulename/Fetch-functions/$function' );
-\$server->registerFunction( 'ezp.fetch.$modulename.$function', array( 'struct', 'array' ), 'mixed', 'Runs the fetch function $modulename/$function, filtering output columns. $params See: http://doc.ez.no/eZ-Publish/Technical-manual/4.x/Reference/Modules/$modulename/Fetch-functions/$function' );
-\$server->registerFunction( 'ezp.fetch.$modulename.$function', array( 'struct', 'array', 'int' ), 'mixed', 'Runs the fetch function $modulename/$function, filtering output columns and limiting encoding depth. $params See: http://doc.ez.no/eZ-Publish/Technical-manual/4.x/Reference/Modules/$modulename/Fetch-functions/$function' );
+\$server->registerFunction( 'ezp.fetch.$modulename.$function', array( 'struct' ), 'mixed', '$desc(runs the fetch function $modulename/$function). $params $returns$more' );
+\$server->registerFunction( 'ezp.fetch.$modulename.$function', array( 'struct', 'array' ), 'mixed', '$desc(runs the fetch function $modulename/$function, filtering output columns). $params $returns$more' );
+\$server->registerFunction( 'ezp.fetch.$modulename.$function', array( 'struct', 'array', 'int' ), 'mixed', '$desc(runs the fetch function $modulename/$function, filtering output columns and limiting encoding depth). $params $returns$more' );
 function ezp_fetch_{$modulename}_$function( \$parameters, \$results_filter=array(), \$encode_depth=1 ) { return eZWebservicesAPIExecutor::ezpublish_fetch( '$modulename', '$function', \$parameters, \$results_filter, \$encode_depth ); }
 ";
                     }

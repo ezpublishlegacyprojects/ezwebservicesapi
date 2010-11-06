@@ -11,12 +11,17 @@ Changes from 0.1 to 0.2 - released 2010/xx/yy
 
 - added a new set of webservices allowing to execute all exisitng module
   operations.
-  Ex: ezp.operation.content.hide (ezp::operation::content::hide in ezjsc syntax)
+  Ex: ezp.operation.content.hide (ezp::operation::content::hide in ezjscore syntax)
   Here again, policy limitations are available with one limitation per operation
 
 - improved the encoding of ezpersistentobject descendant classes
   (eg. ezcontentobjectreenode as returned by fetch content/list):
   now the proper type is enforced for scalar attributes
+
+- improved the description of webservices that map fetch functions and views from
+  the eZPublish kernel: if the ezpersistentobject extension is installed, the
+  description of a method returned by calls to system.methodHelp will be more
+  detailed
 
 *Bugfixes:
 
