@@ -190,13 +190,19 @@ class eZWebservicesAPIExecutor
     static function ezpublish_inspect( $classname, $keys, $params=array() )
     {
 
+        if ( !class_exists( 'ezPODocScanner' ) )
+        {
+            /// @todo log error
+            return false;
+        }
+
         $classdef = ezPODocScanner::definition( $classname );
         if ( !$classdef || !$classdef['persistent'] )
         {
             /// @todo log warning
             return false;
         }
-        $classname = ezPODocScanner::findClassNameGivenLowerCaseName( $classname );
+        $classname = ezPODocScanner::findClassNameGivenLowerCaseName( strtolower( $classname ) );
         if ( !$classname )
         {
             /// @todo log warning
