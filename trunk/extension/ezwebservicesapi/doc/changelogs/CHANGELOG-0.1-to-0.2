@@ -23,6 +23,10 @@ Changes from 0.1 to 0.2 - released 2010/xx/yy
   description of a method returned by calls to system.methodHelp will be more
   detailed
 
+- invoking via ezp.view.* views that result in a redirect to another page does
+  not result in a webservice error anymore, but in a response with a 'redirect'
+  member, containing the url that eZPublish is redirecting to
+
 *Bugfixes:
 
 - fix calls to ezp.view.* that needed post or unordered parameters.

@@ -24,7 +24,11 @@ o  at least one of the ggwebservices, version 0.6 or later, or ezjscore extensio
 o  to receive jsonrpc calls, ggwebservices and the php JSON extension is needed
 o  to receive xmlrpc calls, ggwebservices and the php XMLRPC extension is needed
 o  the ezjscore extension is recommended for receiving ajax calls
-
+o  the ezpersistentobject_inspector extension is required to enable the ezp.inspect
+   webservice (used by ezdebug extension). It is also recommended for adding more
+   detailed descriptions of the available webservices (the description can be
+   seen viaexecution of a system.methodHelp method call in xmlrpc/jsonrpc, using
+   eg. the debugger provided by the ggwebservices extension)
 
 Installation
 ============
@@ -77,6 +81,8 @@ The parameters of these webservices are the same that are used from the standard
 eZ Publish API detailed in the online doc at
 http://doc.ez.no/eZ-Publish/Technical-manual/4.x/Reference/Modules
 
+Some sample call payloads are described in the doc/sample_calls.txt document.
+
 For fetch functions, the signature is:
 
 mixed $result = ezp.fetch.$module.$fetch_function(
@@ -91,10 +97,10 @@ which means in general an array of objects (null is also a valid result).
 For module views, the signature is:
 
 mixed $result = ezp.view.$module.$view(
-  struct $options,                // extra options. supported options:
+  [struct $options,]              // extra options. supported options:
                                      'return_type' 1 for returning the variables normally passed to the template, 2 for template results
-  [mixed $view_parameter]*,       // the ordered parameters, as declared in the view definition in module.php
-  [struct $unordered_parameters], // the unordered parameters, as declared in the view definition in module.php
+  [array $view_parameters,]       // the ordered parameters, as declared in the view definition in module.php
+  [struct $unordered_parameters,] // the unordered parameters, as declared in the view definition in module.php
   [struct $post_parameters]       // any parameters that would have been sent as POST variable
 )
 
@@ -126,17 +132,17 @@ mixed $result = ezp.fetchall(
 mixed $result = ezp.viewall(
   string $module,                 // name of the module
   string $fetch_function,         // name of the fetch function
-  [struct $options],              // extra options. supported options:
+  [struct $options,]              // extra options. supported options:
                                      'return_type' 1 for returning the variables normally passed to the template, 2 for template results (default is 1)
-  [mixed $view_parameter]*,       // the ordered parameters, as declared in the view definition in module.php
-  [struct $unordered_parameters], // the unordered parameters, as declared in the view definition in module.php
+  [array $view_parameters,]       // the ordered parameters, as declared in the view definition in module.php
+  [struct $unordered_parameters,] // the unordered parameters, as declared in the view definition in module.php
   [struct $post_parameters]       // any parameters that would have been sent as POST variable
 )
 
 mixed $result = ezp.operationall(
   string $module,              // name of the module
   string $operation,           // name of the operation
-  [struct $params]            // where all the (named) parameters for the operations are stored
+  [struct $params]             // where all the (named) parameters for the operations are stored
 )
 
 These webservices  are meant to give a role a single permission that will allow
