@@ -25,6 +25,10 @@ Changes from 0.1 to 0.2 - released 2010/xx/yy
 
 *Bugfixes:
 
+- fix calls to ezp.view.* that needed post or unordered parameters.
+  NB: this is a backward incompatible change: the API of all ezp.view.* methods
+  has changed!
+
 - make sure this extension is enabled as JSONRPC provider, and that it registers
   webservices for jsonrpc also when RegisterAllProtocolsFunctions=disabled
 

@@ -85,7 +85,8 @@ class eZWebservicesAPIExecutor
                 else if ( $moduleExitStatus == eZModule::STATUS_REDIRECT )
                 {
                     /// @todo run next module?
-                    return new ggWebservicesFault( self::ERR_NOTIMPLEMENTED, 'Module redirects. Not supported yet' );
+                    //return new ggWebservicesFault( self::ERR_NOTIMPLEMENTED, 'Module redirects. Not supported yet' );
+                    return array( 'redirect' => $module->redirectURI() );
                 }
                 else if ( $moduleExitStatus == eZModule::STATUS_RERUN )
                 {
@@ -348,27 +349,30 @@ class eZWebservicesAPIExecutor
                             'post_action_parameters' => array(),
                             'single_post_actions' => array(),
                             ), $view );
-                        $param_array = array( "'struct'" ); // 1st param: options
-                        $help = 'struct $options';
-                        foreach( $view['params'] as $p ) // positional params
+                        // positional parameters
+                        $paramsdesc = '';
+                        if ( count( $view['params'] ) )
                         {
-                            $param_array[] = "'mixed'";
-                            $help .= ", mixed $p";
+                            $paramsdesc = array();
+                            foreach( $view['params'] as $p )
+                            {
+                                $paramsdesc[] = "mixed \$$p";
+                            }
+                            $paramsdesc = '(' . implode( $paramsdesc, ', ' ) . ')';
                         }
+
+                        // unordered ones
+                        $uparamsdesc = '';
                         if ( count( $view['unordered_params'] ) )
                         {
-                            $param_array[] = "'struct'"; // unordered params
-                            /// @todo add description of params into help text
-                            $help .= ', struct $unordered_parameters';
+                            $uparamsdesc = array();
+                            foreach( $view['unordered_params'] as $p )
+                            {
+                                $uparamsdesc[] = "mixed '$p'";
+                            }
+                            $uparamsdesc = '(' . implode( $paramsdesc, ', ' ) . ')';
                         }
-                        // POST params are always added, just in case they are used by module code
-                        /*if ( count( $view['post_action_parameters'] ) > 0 || count( $view['single_post_actions'] ) > 0 )
-                        {
-                            $param_array[] = "'struct'"; // post params
-                            /// @todo add description of params into help text
-                            $help .= ', struct $post_parameters';
-                        }*/
-                        //$p_s = count( $view['unordered'] ) ? implode( ', ', array_fill( 0, count( $view['unordered'], "'mixed'" ) ) ) : '';
+                        // post params are unknown in a lot of cases
                         $more = '';
                         if ( $extension == '' )
                         {
@@ -381,10 +385,14 @@ class eZWebservicesAPIExecutor
                             //$desc = var_export(  $desc );
                             $desc = isset( $desc['desc'] ) ? rtrim( str_replace( "'", "\\'", $desc['desc'] ), '.' ) . ' ' : '';
                         }
+                        $desc .= "(executes the view $modulename/$viewname).";
                         $vws .= "
-\$server->registerFunction( 'ezp.view.$modulename.$viewname', array( " . implode( ', ', $param_array ) . " ), 'struct', '$desc(executes the view $modulename/$viewname). Params: $help.$more' );
-\$server->registerFunction( 'ezp.view.$modulename.$viewname', array( " . implode( ', ', $param_array ) . ", 'struct' ), 'struct', '$desc(executes the view $modulename/$viewname). Params: $help, struct \$post_parameters.$more' );
-function ezp_view_{$modulename}_$viewname( \$parameters ) { return eZWebservicesAPIExecutor::ezpublish_view( '$modulename', '$viewname', \$parameters ); }
+\$server->registerFunction( 'ezp.view.$modulename.$viewname', array(), 'struct', '$desc $more' );
+\$server->registerFunction( 'ezp.view.$modulename.$viewname', array( 'struct' ), 'struct', '$desc Params: struct \$options(int 'return_type', int 'encoding_depth').$more' );
+\$server->registerFunction( 'ezp.view.$modulename.$viewname', array( 'struct', 'array' ), 'struct', '$desc Params:  struct \$options(int 'return_type', int 'encoding_depth'), array \$parameters$paramsdesc.$more' );
+\$server->registerFunction( 'ezp.view.$modulename.$viewname', array( 'struct', 'array', 'struct' ), 'struct', '$desc Params: struct \$options(int 'return_type', int 'encoding_depth'), array \$parameters$paramsdesc, struct \$unordered_parameters$uparamsdesc.$more' );
+\$server->registerFunction( 'ezp.view.$modulename.$viewname', array( 'struct', 'array', 'struct', 'struct' ), 'struct', '$desc Params: struct \$options(int 'return_type', int 'encoding_depth'), array \$parameters$paramsdesc, struct \$unordered_parameters$uparamsdesc, struct \$post_parameters.$more' );
+function ezp_view_{$modulename}_$viewname( \$options=array(), \$parameters=array(), \$unordered_parameters=array(), \$post_parameters=array() ) { return eZWebservicesAPIExecutor::ezpublish_view( '$modulename', '$viewname', \$options, \$parameters, \$unordered_parameters, \$post_parameters ); }
 ";
                     }
                 }
