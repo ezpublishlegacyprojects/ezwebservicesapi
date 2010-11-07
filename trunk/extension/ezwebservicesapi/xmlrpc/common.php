@@ -57,7 +57,7 @@ $server->registerFunction(
     'ezp.inspect', // name of exposed webservice AND php function at the same time
     null,  // input params array. Keys are not really used, as param validation is positional. Use null instead of an array to avoid type validation
     'struct', // type of return value
-    'Inspects any eZ Publish persistent object. Params: string $class, string $id (if the key is built fropm many columns, use a comma-concatenation), [string $attribute]* (used to get back only an attribute of the object. Recursivity allowed' );
+    'Inspects any eZ Publish persistent object. Params: string $class, string $id (if the key is built from many columns, use a comma-concatenation), [string $attribute]* (used to get back only an attribute of the object. Recursivity allowed' );
 
 // These stub functions are only used to allow registering a class method with a friendlier ws name than using php classes
 
