@@ -61,12 +61,12 @@ $server->registerFunction(
 
 // These stub functions are only used to allow registering a class method with a friendlier ws name than using php classes
 
-function ezp_viewall( $module, $view, $return_type = eZWebservicesAPIExecutor::RETURN_VARIABLES, $parameters = array(), $unordered_parameters = array(), $post_parameters = array() )
+function ezp_viewall( $module, $view, $options = array(), $parameters = array(), $unordered_parameters = array(), $post_parameters = array() )
 {
     // since this ws is pretty powerful, allow finer-grained perms checking...
     $ini = ezINI::instance( 'ezwebservicesapi.ini' );
     $skipaccesscheck = ( $ini->variable( 'ws_runview', 'SkipViewAccessCheck' ) == 'enabled' );
-    return eZWebservicesAPIExecutor::ezpublish_view( $module, $view, $return_type, $parameters, $unordered_parameters, $post_parameters, $skipaccesscheck );
+    return eZWebservicesAPIExecutor::ezpublish_view( $module, $view, $options, $parameters, $unordered_parameters, $post_parameters, $skipaccesscheck );
 }
 
 function ezp_fetchall( $module, $fetch, $parameters = array(), $results_filter = array(), $encode_depth = 1 )
