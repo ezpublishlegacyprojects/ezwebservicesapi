@@ -12,7 +12,7 @@
 
 - be smarter about method injection: use __call instead of creating N functions in FunctionList
 
-- implement ezp.inspect in xlrpc/jsonrpc
+- allow usage of POST vars for params passed to ezjscore webservices as alternative to json-encoded strings in GET
 
 1. more docs
 
