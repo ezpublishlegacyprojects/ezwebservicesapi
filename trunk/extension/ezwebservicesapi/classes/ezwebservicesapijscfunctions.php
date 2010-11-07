@@ -32,15 +32,15 @@ class ezWebservicesAPIJSCFunctions
             return false;
         }
 
-        $return_type = eZWebservicesAPIExecutor::RETURN_VARIABLES;
         // we do hand-decoding from json here, since ezjscore has no such capability of its own
+        // (unless we analyze $_POST and set on std param names)
         $parameters = isset( $params[2] ) ? json_decode( $params[2], true ) : array();
-        $unordered_parameters = isset( $params[3] ) ? (array)$params[3] : array();
-        $post_parameters = isset( $params[4] ) ? (array)$params[4] : array();
+        $unordered_parameters = isset( $params[3] ) ? json_decode( $params[3], true ) : array();
+        $post_parameters = isset( $params[4] ) ? json_decode( $params[4], true ) : array();
 
         $ini = ezINI::instance( 'ezwebservicesapi.ini' );
         $skipaccesscheck = ( $ini->variable( 'ws_runview', 'SkipViewAccessCheck' ) == 'enabled' );
-        return eZWebservicesAPIExecutor::ezpublish_view( $module, $view, $return_type, $parameters, $unordered_parameters, $post_parameters, $skipaccesscheck );
+        return eZWebservicesAPIExecutor::ezpublish_view( $module, $view, $parameters, $unordered_parameters, $post_parameters, $skipaccesscheck );
     }
 
     static function fetch( $params )
@@ -63,8 +63,9 @@ class ezWebservicesAPIJSCFunctions
         }
 
         // we do hand-decoding from json here, since ezjscore has no such capability of its own
+        // (unless we analyze $_POST and set on std param names)
         $parameters = json_decode( $params[2], true );
-        $results_filter = isset( $params[3] ) ? (array)$params[3] : array();
+        $results_filter = isset( $params[3] ) ? json_decode( $params[3], true ) : array();
         $encode_depth = isset( $params[4] ) ? (int)$params[4] : 1;
 
         return eZWebservicesAPIExecutor::ezpublish_fetch( $module, $fetch, $parameters, $results_filter, $encode_depth );
