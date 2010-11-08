@@ -368,7 +368,7 @@ class eZWebservicesAPIExecutor
                             $uparamsdesc = array();
                             foreach( $view['unordered_params'] as $p )
                             {
-                                $uparamsdesc[] = "mixed '$p'";
+                                $uparamsdesc[] = "mixed \"$p\"";
                             }
                             $uparamsdesc = '(' . implode( $paramsdesc, ', ' ) . ')';
                         }
@@ -388,10 +388,10 @@ class eZWebservicesAPIExecutor
                         $desc .= "(executes the view $modulename/$viewname).";
                         $vws .= "
 \$server->registerFunction( 'ezp.view.$modulename.$viewname', array(), 'struct', '$desc $more' );
-\$server->registerFunction( 'ezp.view.$modulename.$viewname', array( 'struct' ), 'struct', '$desc Params: struct \$options(int 'return_type', int 'encoding_depth').$more' );
-\$server->registerFunction( 'ezp.view.$modulename.$viewname', array( 'struct', 'array' ), 'struct', '$desc Params:  struct \$options(int 'return_type', int 'encoding_depth'), array \$parameters$paramsdesc.$more' );
-\$server->registerFunction( 'ezp.view.$modulename.$viewname', array( 'struct', 'array', 'struct' ), 'struct', '$desc Params: struct \$options(int 'return_type', int 'encoding_depth'), array \$parameters$paramsdesc, struct \$unordered_parameters$uparamsdesc.$more' );
-\$server->registerFunction( 'ezp.view.$modulename.$viewname', array( 'struct', 'array', 'struct', 'struct' ), 'struct', '$desc Params: struct \$options(int 'return_type', int 'encoding_depth'), array \$parameters$paramsdesc, struct \$unordered_parameters$uparamsdesc, struct \$post_parameters.$more' );
+\$server->registerFunction( 'ezp.view.$modulename.$viewname', array( 'struct' ), 'struct', '$desc Params: struct \$options(int \"return_type\", int \"encoding_depth\").$more' );
+\$server->registerFunction( 'ezp.view.$modulename.$viewname', array( 'struct', 'array' ), 'struct', '$desc Params:  struct \$options(int \"return_type\", int \"encoding_depth\"), array \$parameters$paramsdesc.$more' );
+\$server->registerFunction( 'ezp.view.$modulename.$viewname', array( 'struct', 'array', 'struct' ), 'struct', '$desc Params: struct \$options(int \"return_type\", int \"encoding_depth\"), array \$parameters$paramsdesc, struct \$unordered_parameters$uparamsdesc.$more' );
+\$server->registerFunction( 'ezp.view.$modulename.$viewname', array( 'struct', 'array', 'struct', 'struct' ), 'struct', '$desc Params: struct \$options(int \"return_type\", int \"encoding_depth\"), array \$parameters$paramsdesc, struct \$unordered_parameters$uparamsdesc, struct \$post_parameters.$more' );
 function ezp_view_{$modulename}_$viewname( \$options=array(), \$parameters=array(), \$unordered_parameters=array(), \$post_parameters=array() ) { return eZWebservicesAPIExecutor::ezpublish_view( '$modulename', '$viewname', \$options, \$parameters, \$unordered_parameters, \$post_parameters ); }
 ";
                     }
