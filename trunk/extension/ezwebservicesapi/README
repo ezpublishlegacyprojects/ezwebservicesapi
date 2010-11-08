@@ -21,14 +21,15 @@ o  eZ publish version: Make sure you use eZ publish version 4.0 or higher.
 o  Web Server/Database/PHP version: as indicated in your eZ publish version requirements
 o  Web Browser: no specific requirements
 o  at least one of the ggwebservices, version 0.6 or later, or ezjscore extensions
-o  to receive jsonrpc calls, ggwebservices and the php JSON extension is needed
-o  to receive xmlrpc calls, ggwebservices and the php XMLRPC extension is needed
+o  to receive or make jsonrpc calls, ggwebservices and the php JSON extension is needed
+o  to receive or make xmlrpc calls, ggwebservices and the php XMLRPC extension is needed
 o  the ezjscore extension is recommended for receiving ajax calls
 o  the ezpersistentobject_inspector extension is required to enable the ezp.inspect
-   webservice (used by ezdebug extension). It is also recommended for adding more
-   detailed descriptions of the available webservices (the description can be
-   seen viaexecution of a system.methodHelp method call in xmlrpc/jsonrpc, using
-   eg. the debugger provided by the ggwebservices extension)
+   webservice (used by the ezdebug extension). It is also recommended for adding
+   more detailed descriptions of the available webservices (the description can
+   be seen viaexecution of a system.methodHelp method call in xmlrpc/jsonrpc,
+   using eg. the debugger provided by the ggwebservices extension)
+
 
 Installation
 ============
@@ -51,6 +52,11 @@ Installation
      module: ezwebservicesapi
      function: execute
      limitation: it is possible to limit execution by single webservice
+
+IMPORTANT: when calling webservices that execute module operations, a lot of the
+native eZ Publish access control policies are bypassed, as normally it is the
+role of the view to check access permissions. Take care when giving any user
+access to an ezp.operation.... webservice.
 
 
 Usage
@@ -116,6 +122,7 @@ etc...
 
 To pass nested parameters, the json format is used, so that calls look like the following:
 <root>/ezjscore/call/ezp::fetch::content::list::{"parent_node_id":2}
+<root>/ezjscore/call/ezp::view::content::view::{}::["full", 2]
 <root>/ezjscore/call/ezp::operation::user::preferences::{"key":"a_new_key","value":123}
 
 
