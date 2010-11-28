@@ -6,13 +6,15 @@
 
 - add support for the SkipViewAccessCheck ini file parameter
 
-- add ordering definition: we depend on ggws, ezpo_inspector
+- add ordering definition: we depend on (ggws|ezjscore), ezpo_inspector
+
+- add a php method that returns the currently active ws transports (ggws, ezjscore, ...)
 
 - add ant build file
 
 - be smarter about method injection: use __call instead of creating N functions in FunctionList
 
-- allow usage of POST vars for params passed to ezjscore webservices as alternative to json-encoded strings in GET
+- allow usage of plain POST vars for params passed to ezjscore webservices as alternative to json-encoded strings in ws name
 
 1. more docs
 

@@ -106,16 +106,15 @@ class ezWebservicesAPIJSCFunctions
 
         // check perms using our own set of access functions
         $user = eZUser::currentUser();
-        $access = eZWebservicesAPIExecutor::checkAccess( "operation_{$module}_$fetch", $user );
+        $access = eZWebservicesAPIExecutor::checkAccess( 'inspect', $user );
         if ( !$access )
         {
             /// @todo log warning
             return false;
         }
-
-        array_shift( $params );
-        array_shift( $params );
-        return eZWebservicesAPIExecutor::ezpublish_inspect( (string)$params[0], (string)$params[1], $params );
+        $class = (string)array_shift( $params );
+        $keys = (string)array_shift( $params );
+        return eZWebservicesAPIExecutor::ezpublish_inspect( $class, $keys, $params );
     }
 
 }
