@@ -190,13 +190,11 @@ class eZWebservicesAPIExecutor
      */
     static function ezpublish_inspect( $classname, $keys, $params=array() )
     {
-
         if ( !class_exists( 'ezPODocScanner' ) )
         {
             /// @todo log error
             return false;
         }
-
         $classdef = ezPODocScanner::definition( $classname );
         if ( !$classdef || !$classdef['persistent'] )
         {
@@ -217,11 +215,11 @@ class eZWebservicesAPIExecutor
         if ( count( $classdef['keys'] ) > 1 )
         {
             /** Use hardcoded knowledge to invoke fetch functions, as some do not
-             take input parameters in correct order.
+             * take input parameters in correct order.
              * Nb: we assume we received the correct number of key elements
              */
             $keys = explode( ',', $keys );
-            switch( $classdef )
+            switch( $classname )
             {
                 case 'eZContentObjectAttribute':
                     // declares 4 keys whereas it only has 2 in its class def!
@@ -252,7 +250,6 @@ class eZWebservicesAPIExecutor
         {
             return false;
         }
-
         // dig down the attribute chain
         for( $i = 0; $i < count( $params ); $i++ )
         {
