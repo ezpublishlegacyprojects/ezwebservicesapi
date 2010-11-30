@@ -18,7 +18,7 @@ class ezWebservicesAPIJSCFunctions
         if ( count( $params ) < 2 )
         {
             /// @todo log warning
-            return false;
+            throw new Exception( 'Missing parameters' );
         }
         $module = (string)$params[0];
         $view = (string)$params[1];
@@ -29,7 +29,7 @@ class ezWebservicesAPIJSCFunctions
         if ( !$access )
         {
             eZDebug::writeWarning( "Unauthorized access to ws view_{$module}_$view attempted. User: ". $user->attribute( 'contentobject_id' ), __METHOD__ );
-            return false;
+            throw new Exception( 'Insufficient permissions' );
         }
 
         // we do hand-decoding from json here, since ezjscore has no such capability of its own
@@ -48,7 +48,7 @@ class ezWebservicesAPIJSCFunctions
         if ( count( $params ) < 3 )
         {
             /// @todo log warning
-            return false;
+            throw new Exception( 'Missing parameters' );
         }
         $module = $params[0];
         $fetch = $params[1];
@@ -59,7 +59,7 @@ class ezWebservicesAPIJSCFunctions
         if ( !$access )
         {
             eZDebug::writeWarning( "Unauthorized access to ws fetch_{$module}_$fetch attempted. User: ". $user->attribute( 'contentobject_id' ), __METHOD__ );
-            return false;
+            throw new Exception( 'Insufficient permissions' );
         }
 
         // we do hand-decoding from json here, since ezjscore has no such capability of its own
@@ -76,7 +76,7 @@ class ezWebservicesAPIJSCFunctions
         if ( count( $params ) < 2 )
         {
             /// @todo log warning
-            return false;
+            throw new Exception( 'Missing parameters' );
         }
         $module = $params[0];
         $operation = $params[1];
@@ -87,7 +87,7 @@ class ezWebservicesAPIJSCFunctions
         if ( !$access )
         {
             eZDebug::writeWarning( "Unauthorized access to ws operation_{$module}_$operation attempted. User: ". $user->attribute( 'contentobject_id' ), __METHOD__ );
-            return false;
+            throw new Exception( 'Insufficient permissions' );
         }
 
         // we do hand-decoding from json here, since ezjscore has no such capability of its own
@@ -101,7 +101,7 @@ class ezWebservicesAPIJSCFunctions
         if ( count( $params ) < 2 )
         {
             /// @todo log warning
-            return false;
+            throw new Exception( 'Missing parameters' );
         }
 
         // check perms using our own set of access functions
@@ -109,8 +109,8 @@ class ezWebservicesAPIJSCFunctions
         $access = eZWebservicesAPIExecutor::checkAccess( 'inspect', $user );
         if ( !$access )
         {
-            /// @todo log warning
-            return false;
+            eZDebug::writeWarning( "Unauthorized access to ws inspect attempted. User: ". $user->attribute( 'contentobject_id' ), __METHOD__ );
+            throw new Exception( 'Insufficient permissions' );
         }
         $class = (string)array_shift( $params );
         $keys = (string)array_shift( $params );
