@@ -2,8 +2,9 @@ Changes from 0.3 to 0.4 - released 2010/xx/yy
 
 *General:
 
+- bad parameters or insufficient permissions when calling webservices via ezjscore do not return a null string anymore but an error_text instead
+
 *Bugfixes:
 
 - proper permissions checking for ezp::inspect when using ezjscore calls
-
 - error in fetching some specific pos in ezp::inspect (eg. eZContentObjectAttribute)
