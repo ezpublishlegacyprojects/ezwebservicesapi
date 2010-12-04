@@ -1,12 +1,10 @@
 - make sure that debug messages printed when bad params are received in ws calls
-  or ws called without perms are equivalent bewteen ezjsc and xmlrpc/jsonrpc protrocols
+  or ws called without perms are equivalent bewteen ezjsc and xmlrpc/jsonrpc protocols
 
 - allow caller to set the encoding level and attr. filter to be used per variable on the variables returned by ezp.view.xxx;
   also allow to filter out desired vars
 
 - add support for the SkipViewAccessCheck ini file parameter
-
-- add ordering definition: we depend on (ggws|ezjscore), ezpo_inspector
 
 - add a php method that returns the currently active ws transports (ggws, ezjscore, ...)
 
