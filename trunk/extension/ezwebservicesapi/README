@@ -27,7 +27,7 @@ o  the ezjscore extension is recommended for receiving ajax calls
 o  the ezpersistentobject_inspector extension is required to enable the ezp.inspect
    webservice (used by the ezdebug extension). It is also recommended for adding
    more detailed descriptions of the available webservices (the description can
-   be seen viaexecution of a system.methodHelp method call in xmlrpc/jsonrpc,
+   be seen via execution of a system.methodHelp method call in xmlrpc/jsonrpc,
    using eg. the debugger provided by the ggwebservices extension)
 
 

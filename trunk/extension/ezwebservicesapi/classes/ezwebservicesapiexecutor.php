@@ -164,7 +164,7 @@ class eZWebservicesAPIExecutor
 
     /**
     * Note: there 'might' be operations that return something of use beside status,
-    * but we found little so far in the eZP stantard operations
+    * but we found little so far in the eZP standard operations
     */
     static function ezpublish_operation( $module, $operation, $parameters = array() )
     {

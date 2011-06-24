@@ -2,7 +2,7 @@
 
 [ezjscServer]
 # Permission functions
-# Unfortunately we need more fine-grained access control than this, wo we bypass
+# Unfortunately we need more fine-grained access control than this, so we bypass
 # ezjscore acl and set up custom access checking within the php code itself
 #FunctionList[]=ezp_fetchall
 #FunctionList[]=ezp_inspect
